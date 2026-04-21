@@ -273,9 +273,19 @@ def bind_protein(g: int, h: int) -> None:
     n_bindable_sites[site] -= 1     # Update count of bindable sites by site type.
     n_bound_prots_by_nuc[site][nuc] += 1   # Update count of bound proteins by site type and nucleotide state.
     
+def unbind_protein(g: int, h: int, removal_reason: str) -> None:
+    # NEW: break all inter-protein bonds before unbinding.
+    # Handles both kinetic removal and forced site_loss removal.
+    for (g2, h2) in list(protein_bonds.get((g, h), set())):
+        break_protein_bond(g, h, g2, h2)
+
+    # ...rest unchanged...
     
 def unbind_protein(g: int, h: int, removal_reason: str) -> None:
-    """Mark a pocket as vacant and finalize the event record."""
+    """All inter-protein bonds must be broken before unbinding.
+    Mark a pocket as vacant and finalize the event record."""
+    for (g2, h2) in list(protein_bonds.get((g, h), set())): #Break bonds with partners before unbinding if unbound due to tubulin loss.
+        break_protein_bond(g, h, g2, h2)
     prot_sites[g, h, 2] = 0
     evt_idx = bound_prots.pop((g, h))
     prot_events[evt_idx]['t_off']   = time_elapsed
@@ -287,6 +297,102 @@ def unbind_protein(g: int, h: int, removal_reason: str) -> None:
     n_bindable_sites[site] += 1     # Update count of bindable sites by site type.
     n_bound_prots_by_nuc[site][nuc] -= 1   # Update count of bound proteins by site type and nucleotide state.
 
+
+def get_possible_protein_neighbors(g: int, h: int) -> list:
+    """
+    All valid (g', h') within the interaction kernel of (g, h).
+    Groove varies by ±1. Height varies by 0 or ±1 depending on interaction_range.
+    Seam grooves (0 and n_pf) and out-of-bounds heights excluded.
+    """
+    neighbors = []
+    for delta_g in (-1, 1):
+        g2 = g + delta_g
+        if g2 <= 0 or g2 >= n_pf:
+            continue
+        for delta_h in range(-interaction_range, interaction_range + 1):
+            h2 = h + delta_h
+            if not height_in_bounds(h2):
+                continue
+            neighbors.append((g2, h2))
+    return neighbors
+
+
+def prot_bond_count(g: int, h: int) -> int:
+    """Number of inter-protein bonds the protein at (g, h) currently has."""
+    return len(protein_bonds.get((g, h), set()))
+
+
+def prot_is_doubly_bonded(g: int, h: int) -> bool:
+    """
+    True if bonded to at least one protein at groove g-1 AND one at groove g+1.
+    Mirrors lateral_stabilization_factor logic for tubulin.
+    """
+    bonds = protein_bonds.get((g, h), set())
+    has_left  = any(g2 == g - 1 for (g2, _) in bonds)
+    has_right = any(g2 == g + 1 for (g2, _) in bonds)
+    return has_left and has_right
+
+
+def get_prot_bond_break_rate(g1: int, h1: int, g2: int, h2: int) -> float:
+    """
+    Break rate for the bond between (g1, h1) and (g2, h2).
+    Nucleotide-independent. Divided by prot_bond_stabilization_factor
+    if either protein is currently doubly bonded.
+    """
+    rate = k_prot_bond_break
+    if prot_is_doubly_bonded(g1, h1) or prot_is_doubly_bonded(g2, h2):
+        rate /= prot_bond_stabilization_factor
+    return rate
+
+
+def form_protein_bond(g1: int, h1: int, g2: int, h2: int) -> None:
+    """
+    Form an inter-protein bond. Updates protein_bonds and n_bonded_prots_by_nuc.
+    """
+    was_unbonded_1 = (g1, h1) not in protein_bonds
+    was_unbonded_2 = (g2, h2) not in protein_bonds
+
+    protein_bonds.setdefault((g1, h1), set()) # If the key is not in the dict, inserts it with default as its value. If the key already exists, does nothing.
+    protein_bonds[(g1, h1)].add((g2, h2))
+    protein_bonds.setdefault((g2, h2), set())
+    protein_bonds[(g2, h2)].add((g1, h1))
+
+    # Update n_bonded_prots_by_nuc
+    if was_unbonded_1:
+        site = int(prot_sites[g1, h1, 0])
+        nuc  = int(prot_sites[g1, h1, 1])
+        if site in n_bonded_prots_by_nuc:
+            n_bonded_prots_by_nuc[site][nuc] += 1
+
+    if was_unbonded_2:
+        site = int(prot_sites[g2, h2, 0])
+        nuc  = int(prot_sites[g2, h2, 1])
+        if site in n_bonded_prots_by_nuc:
+            n_bonded_prots_by_nuc[site][nuc] += 1
+
+
+def break_protein_bond(g1: int, h1: int, g2: int, h2: int) -> None:
+    """
+    Break an inter-protein bond. Updates protein_bonds and n_bonded_prots_by_nuc.
+    """
+    if (g1, h1) in protein_bonds:
+        protein_bonds[(g1, h1)].discard((g2, h2))
+        if not protein_bonds[(g1, h1)]: # An empty set is False
+            del protein_bonds[(g1, h1)]
+            site = int(prot_sites[g1, h1, 0])
+            nuc  = int(prot_sites[g1, h1, 1])
+            if site in n_bonded_prots_by_nuc:
+                n_bonded_prots_by_nuc[site][nuc] -= 1
+
+    if (g2, h2) in protein_bonds:
+        protein_bonds[(g2, h2)].discard((g1, h1))
+        if not protein_bonds[(g2, h2)]:
+            del protein_bonds[(g2, h2)]
+            site = int(prot_sites[g2, h2, 0])
+            nuc  = int(prot_sites[g2, h2, 1])
+            if site in n_bonded_prots_by_nuc:
+                n_bonded_prots_by_nuc[site][nuc] -= 1
+                
 # =============================================================
 # HELPERS TO UPDATE STATES
 # =============================================================

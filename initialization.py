@@ -69,8 +69,8 @@ highest_lat = np.full(n_pf, seed_length-1, dtype=np.int32)    # For each PF,  he
                                                             # Tubulin can only dissociate from at least above this height.
                                                             # MATLAB: highestFullLatMade
 
-highest_hydro = seed_length # Highest height at which ALL protofilaments are GDP-hydrolyzed. Limits the inner hydrolysis check loop.
-                            # MATLAB: highestFullHydro
+highest_full_GDP = seed_length - 1 # Highest height at which ALL protofilaments are GDP-hydrolyzed. Limits the inner hydrolysis check loop.
+                                                           # MATLAB: highestFullHydro
 
 
 # =============================================================
@@ -103,8 +103,17 @@ prot_events = []
 #               (8, 26): 2,   # protein at groove 8, height 26 is entry 2 in prot_events
 #               }
 bound_prots = {}
+protein_bonds = {}              # Proteins can oligomerize forming bonds to adjacent proteins depending on the kernel.
+                                # This dict tracks which proteins are bonded to which, such as:
+                                # protein_bonds = {(3, 25): {(4, 25)}, (4, 25): {(3, 25), (5, 25)}, (5, 25): {(4, 25)}}
 
-
+# Bonded proteins are excluded from removal pools.
+n_bonded_prots_by_nuc = {
+    SITE_LATTICE:   {NUC_GTP: 0, NUC_MIXED: 0, NUC_GDP: 0},
+    SITE_EDGELAT2:  {NUC_GTP: 0, NUC_MIXED: 0, NUC_GDP: 0},
+    SITE_EDGELONG2: {NUC_GTP: 0, NUC_MIXED: 0, NUC_GDP: 0},
+    SITE_EDGE3:     {NUC_GTP: 0, NUC_MIXED: 0, NUC_GDP: 0},
+}
 # =============================================================
 # SIMULATION
 # =============================================================
@@ -200,8 +209,8 @@ def validate_initialization():
     assert np.all(highest_lat == seed_length-1), \
         f"highest_lat should all be {seed_length}, got: {highest_lat}"
 
-    assert highest_hydro == seed_length, \
-        f"highest_hydro should be {seed_length}, got: {highest_hydro}"
+    assert highest_full_GDP == seed_length - 1, \
+        f"highest_hydro should be {seed_length - 1}, got: {highest_full_GDP}"
 
     assert np.all(MT_lattice[:, :, 0] == 0), \
         "MT_lattice hydrolysis layer should be all-GTP (0) at start"
@@ -259,7 +268,7 @@ print(f"  MT_lattice shape  : {MT_lattice.shape}")
 print(f"  prot_sites shape  : {prot_sites.shape}")
 print(f"  pf_len            : {pf_len}")
 print(f"  highest_lat       : {highest_lat}")
-print(f"  highest_hydro     : {highest_hydro}")
+print(f"  highest_hydro     : {highest_full_GDP}")
 print(f"  time_elapsed      : {time_elapsed}")
 
 tip_labels = {

@@ -149,6 +149,13 @@ lateral_stabilization_factor = 10.0
 # actual_rate = k_lateralbreak / lateral_stabilization_factor
 # MATLAB: Pibreak = 10
 
+# -------------------------------------------------------------
+# INTER-PROTEIN BOND PARAMETERS
+# -------------------------------------------------------------
+interaction_range              = 1      # 0 = same height only, 1 = ±1 height
+k_prot_bond_form               = 100.0/5  # s-1, 100.0 is k_lateralbond for tubulin
+k_prot_bond_break              = 70.0/5   # s-1, 70.0 is k_lateralbreak_TT (nucleotide-independent)
+prot_bond_stabilization_factor = 10.0/5   # 10 is lateral_stabilization_factor for tubulin
 
 # -------------------------------------------------------------
 # EB1 PROTEIN ON-RATES  (nM-1 site-1 s-1)

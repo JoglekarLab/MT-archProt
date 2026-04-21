@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import io
 from PIL import Image
 
@@ -58,6 +59,40 @@ def choose_next_event(candidate_events):
         return None
     return min(possible, key=lambda ev: ev["dt"])
 
+# -----------------------------------------------------------
+# GTP HYDROLYSIS
+# -----------------------------------------------------------
+
+def update_highest_full_GDP(hydrolyzed_hh: int) -> None:
+    """
+    Walk up from highest_full_GDP checking if all PFs are GDP at each row.
+    Stop at the first row where any PF is still GTP.
+    up_to: the height of the dimer that just hydrolyzed.
+    """
+    global highest_full_GDP
+    for hh in range(highest_full_GDP + 1, hydrolyzed_hh + 1):
+        if all(MT_lattice[pf, hh, 0] == 1 for pf in range(n_pf)):
+            highest_full_GDP = hh
+        else:
+            break
+
+def execute_hydrolysis(dt: float) -> None:
+    """
+    Only buried dimers hydrolyze, so the loop to sample a waiting time goes backwards from the second to last dimer of each PF.
+    If that waiting time < dt, the dimer hydrolyzes.
+    Hydrolysis check called once per iteration after the winning event fires. This is computationally more efficient than putting all hydrolysis events in the candidate list for Guillespie.
+    """
+    for pf in range(n_pf):
+        for hh in range(pf_len[pf] - 2, highest_full_GDP, -1):
+
+            if MT_lattice[pf, hh, 0] == 1:  # already GDP
+                continue
+
+            if sample_exponential_dt(k_hydrolysis) < dt:
+                MT_lattice[pf, hh, 0] = 1   # GTP → GDP
+                update_highest_full_GDP(hydrolyzed_hh=hh)
+                refresh_local_environment_after_tubulin_change(pf, hh)
+                
 # -----------------------------------------------------------
 # EVENT GENERATION
 # -----------------------------------------------------------
@@ -154,19 +189,21 @@ def generate_prot_bind_events():
 
 def generate_prot_remove_events():
     candidate_events = []
+    
+    def removable_prots(site, nuc):
+        return n_bound_prots_by_nuc[site][nuc] - n_bonded_prots_by_nuc[site][nuc]
 
-    n_gtp_edge = (n_bound_prots_by_nuc[SITE_EDGELAT2][NUC_GTP] +
-                  n_bound_prots_by_nuc[SITE_EDGELONG2][NUC_GTP] +
-                  n_bound_prots_by_nuc[SITE_EDGE3][NUC_GTP])
+    n_gtp_edge = (removable_prots(SITE_EDGELAT2,  NUC_GTP) +
+                  removable_prots(SITE_EDGELONG2, NUC_GTP) +
+                  removable_prots(SITE_EDGE3,     NUC_GTP))
 
-    n_gdp_edge = (n_bound_prots_by_nuc[SITE_EDGELAT2][NUC_MIXED] + n_bound_prots_by_nuc[SITE_EDGELAT2][NUC_GDP] +
-                  n_bound_prots_by_nuc[SITE_EDGELONG2][NUC_MIXED] + n_bound_prots_by_nuc[SITE_EDGELONG2][NUC_GDP] +
-                  n_bound_prots_by_nuc[SITE_EDGE3][NUC_MIXED]    + n_bound_prots_by_nuc[SITE_EDGE3][NUC_GDP])
+    n_gdp_edge = (removable_prots(SITE_EDGELAT2,  NUC_MIXED) + removable_prots(SITE_EDGELAT2,  NUC_GDP) +
+                  removable_prots(SITE_EDGELONG2, NUC_MIXED) + removable_prots(SITE_EDGELONG2, NUC_GDP) +
+                  removable_prots(SITE_EDGE3,     NUC_MIXED) + removable_prots(SITE_EDGE3,     NUC_GDP))
 
-    n_gtp_lattice = n_bound_prots_by_nuc[SITE_LATTICE][NUC_GTP]
-
-    n_gdp_lattice = (n_bound_prots_by_nuc[SITE_LATTICE][NUC_MIXED] +
-                     n_bound_prots_by_nuc[SITE_LATTICE][NUC_GDP])
+    n_gtp_lattice = removable_prots(SITE_LATTICE, NUC_GTP)
+    
+    n_gdp_lattice = (removable_prots(SITE_LATTICE, NUC_MIXED) + removable_prots(SITE_LATTICE, NUC_GDP))
 
     if n_gtp_edge > 0:
         candidate_events.append(make_event('prot_remove_gtp_edge',    rate=koff_prot_GTP_1 * n_gtp_edge,    h=-1)) # Note h=-1 is just a placeholder, means nothing, it's just passed as the function needs it, but in reality the rate is for all sites
@@ -177,6 +214,43 @@ def generate_prot_remove_events():
     if n_gdp_lattice > 0:
         candidate_events.append(make_event('prot_remove_gdp_lattice', rate=koff_prot_GDP_0 * n_gdp_lattice, h=-1))
 
+    return candidate_events
+
+def generate_prot_bond_form_events():
+    """
+    One event per unbonded pair of neighboring bound proteins.
+    g < g2 filter avoids generating each pair twice.
+    """
+    candidate_events = []
+    for (g, h) in bound_prots:
+        for (g2, h2) in get_protein_neighbors(g, h):
+            if g2 <= g: # g2 <= g filter avoids generating each pair twice.
+                continue
+            if not get_pocket_is_bound(g2, h2):
+                continue
+            if (g2, h2) in protein_bonds.get((g, h), set()): # Already bonded with each other
+                continue
+            event = make_event('prot_bond_form', rate=k_prot_bond_form, h=h, g=g)
+            event['g2'] = g2
+            event['h2'] = h2
+            candidate_events.append(event)
+    return candidate_events
+
+def generate_prot_bond_break_events():
+    """
+    One event per existing inter-protein bond.
+    g < g2 filter avoids generating each bond twice.
+    """
+    candidate_events = []
+    for (g, h), neighbors in protein_bonds.items():
+        for (g2, h2) in neighbors:
+            if g2 <= g: # g2 <= g filter avoids generating each pair twice.
+                continue
+            rate = get_prot_bond_break_rate(g, h, g2, h2)
+            event = make_event('prot_bond_break', rate=rate, h=h, g=g)
+            event['g2'] = g2
+            event['h2'] = h2
+            candidate_events.append(event)
     return candidate_events
     
 # -----------------------------------------------------------
@@ -293,6 +367,8 @@ def execute_prot_remove(event: dict) -> None:
 
     proteins = [] # Create the pool of candidate proteins to remove
     for (g, h) in bound_prots:
+        if prot_bond_count(g, h) > 0:   # NEW: bonded proteins cannot be removed
+            continue
         site = int(prot_sites[g, h, 0])
         nuc  = int(prot_sites[g, h, 1])
         is_lattice = (site == SITE_LATTICE)
@@ -305,6 +381,21 @@ def execute_prot_remove(event: dict) -> None:
 
     g, h = proteins[np.random.randint(len(proteins))]
     unbind_protein(g, h, event['event_type'])
+    
+    
+def execute_prot_bond_form(event: dict) -> None:
+    g1, h1, g2, h2 = event['g'], event['h'], event['g2'], event['h2']
+    if not get_pocket_is_bound(g1, h1) or not get_pocket_is_bound(g2, h2):
+        raise RuntimeError(f"execute_prot_bond_form: one of the pockets is not bound at execution — counter mismatch: (g1,h1)=({g1},{h1}), (g2,h2)=({g2},{h2})")
+    if (g2, h2) in protein_bonds.get((g1, h1), set()):
+        raise RuntimeError(f"execute_prot_bond_form: pockets already bonded at execution — counter mismatch: (g1,h1)=({g1},{h1}), (g2,h2)=({g2},{h2})")
+    form_protein_bond(g1, h1, g2, h2)
+
+def execute_prot_bond_break(event: dict) -> None:
+    g1, h1, g2, h2 = event['g'], event['h'], event['g2'], event['h2']
+    if (g2, h2) not in protein_bonds.get((g1, h1), set()):
+        raise RuntimeError(f"execute_prot_bond_break: pockets not bonded at execution — counter mismatch: (g1,h1)=({g1},{h1}), (g2,h2)=({g2},{h2})")
+    break_protein_bond(g1, h1, g2, h2)
     
 # -----------------------------------------------------------
 # PRINTERS
@@ -320,30 +411,36 @@ def plot_pf_lengths_and_lattice_occupancy():
     ax1.set_xlabel("Protofilament")
     ax1.set_ylabel("Length")
     ax1.set_title(f"PF lengths at t = {time_elapsed:.4f} s")
-
-    # # --- right: protein occupancy ---
-    # max_h = int(pf_len.max())
-    # prot_img = np.zeros((max_h, n_pf + 1), dtype=int)
-    # for g in range(n_pf + 1):
-    #     for h in range(max_h):
-    #         prot_img[h, g] = int(prot_sites[g, h, 2])
-    # im = ax2.imshow(prot_img, origin='lower', aspect='auto')
-    # ax2.set_xlabel("Groove")
-    # ax2.set_ylabel("Height")
-    # ax2.set_title(f"Protein occupancy at t = {time_elapsed:.4f} s")
-    # fig.colorbar(im, ax=ax2, label="EB1 bound")
     
-    # --- right: lattice occupancy with protein overlay ---
+    # --- right: lattice occupancy with protein overlay and GTP/GDP coloring ---
     max_h = int(pf_len.max())
     lattice_img = np.zeros((max_h, n_pf), dtype=int)
     for pf in range(n_pf):
         for h in range(pf_len[pf]):
-            lattice_img[h, pf] = 1
-    im = ax2.imshow(lattice_img, origin='lower', aspect='auto', cmap='Blues')
+            if MT_lattice[pf, h, 0] == 0:
+                lattice_img[h, pf] = 1   # GTP
+            else:
+                lattice_img[h, pf] = 2   # GDP
+
+    cmap = matplotlib.colors.ListedColormap(['white', '#0a2472', '#4a90d9'])  # 0 = background (white), 1 = GTP (dark blue), 2 = GDP (medium blue)
+    im = ax2.imshow(lattice_img, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
     ax2.set_xlabel("Protofilament")
     ax2.set_ylabel("Height")
     ax2.set_title(f"Lattice + protein occupancy at t = {time_elapsed:.4f} s")
-    fig.colorbar(im, ax=ax2, label="Tubulin present")
+    
+    # fig.colorbar(im, ax=ax2, label="Tubulin present")
+    # cbar = fig.colorbar(im, ax=ax2, ticks=[1, 2])
+    # cbar.ax.set_yticklabels(['GTP', 'GDP'])
+    
+    # legend_elements = [
+    #     Patch(facecolor='#4a90d9', label='GTP'),
+    #     Patch(facecolor='#0a2472', label='GDP'),
+    # ]
+    legend_elements = [
+        Patch(facecolor='#0a2472', label='GTP'),
+        Patch(facecolor='#4a90d9', label='GDP'),
+    ]
+    ax2.legend(handles=legend_elements, loc='upper right')
 
     # overlay bound proteins as dots
     for g in range(1, n_pf):  # skip seam grooves 0 and n_pf
@@ -436,7 +533,9 @@ def run_simulation():
                     + generate_lat_bond_formation_events()
                     + generate_lat_bond_break_events()
                     + generate_prot_bind_events()
-                    + generate_prot_remove_events())
+                    + generate_prot_remove_events()
+                    + generate_prot_bond_form_events()
+                    + generate_prot_bond_break_events())    
         
         print_candidate_events(candidates)
 
@@ -464,6 +563,13 @@ def run_simulation():
             execute_prot_bind(event)
         elif event['event_type'].startswith('prot_remove'):
             execute_prot_remove(event)
+        elif event['event_type'] == 'prot_bond_form':
+            execute_prot_bond_form(event)
+        elif event['event_type'] == 'prot_bond_break':
+            execute_prot_bond_break(event)
+            
+        # --- hydrolysis ---
+        execute_hydrolysis(dt=event['dt'])
 
         # --- snapshot ---
         if step % snapshot_freq == 0:
