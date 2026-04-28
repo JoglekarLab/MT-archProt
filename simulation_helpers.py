@@ -251,6 +251,69 @@ def compute_pocket_nuc_state(g: int, h: int) -> int:
 # PROTEIN BINDING/UNBINDING HELPERS
 # =============================================================
 
+def sample_oligomer():
+    """
+    Sample oligomer size weighted by arrival_probs (which already
+    accounts for distribution and diffusion scaling).
+    Then sample which subunit position makes contact, uniformly.
+    Returns (size, position).
+    """
+    sizes = list(arrival_probs.keys())
+    probs = list(arrival_probs.values())
+    size = np.random.choice(sizes, p=probs)
+    position = np.random.randint(1, size + 1)
+    return size, position
+
+def get_tether_reachable_sites(g, h, bound_heights):
+    """
+    Sites reachable by a tethered subunit adjacent to (g, h).
+    bound_heights: list of h values of all currently bound subunits
+                   in the same oligomer.
+    """
+    sites = []
+    for (g2, h2) in get_possible_protein_neighbors(g, h):
+        if get_pocket_is_bound(g2, h2):
+            continue
+        new_heights = bound_heights + [h2]
+        if max(new_heights) - min(new_heights) <= 2 * interaction_range:
+            sites.append((g2, h2))
+    return sites
+
+def update_tether_on_bind(g, h):
+    info      = oligomer_info[(g, h)]
+    oligo_id  = info['oligomer_id']
+    subunit   = info['subunit']
+    size      = info['size']
+
+    # get all currently bound heights in this oligomer
+    bound_heights = [h2 for (g2, h2), info in oligomer_info.items()
+                     if info['oligomer_id'] == oligo_id]
+
+    # remove this subunit's own tether contribution
+    # (it was tethered before it bound, contributing to sites near its anchor)
+    for site in tether_sites_of[(g, h)]:   # sites it was boosting before binding
+        tethered[site] = tethered.get(site, 0) - 1
+        if tethered[site] == 0:
+            del tethered[site]
+    tether_sites_of.pop((g, h), None)
+
+    # add tethering for unbound chain neighbors
+    for neighbor_pos in (pos - 1, pos + 1):
+        if neighbor_pos < 1 or neighbor_pos > size:
+            continue
+        # check if this chain neighbor is already bound
+        already_bound = any(
+            inf['oligomer_id'] == anchor and inf['subunit'] == neighbor_pos
+            for inf in oligomer_info.values()
+        )
+        if already_bound:
+            continue
+        # compute reachable sites for this tethered subunit
+        sites = get_tether_reachable_sites(g, h, bound_heights)
+        tether_sites_of_pending[(anchor, neighbor_pos)] = sites
+        for site in sites:
+            tethered[site] = tethered.get(site, 0) + 1
+
 def bind_protein(g: int, h: int) -> None:
     """Mark a pocket as occupied and record the binding event."""
     prot_sites[g, h, 2] = 1
@@ -272,14 +335,6 @@ def bind_protein(g: int, h: int) -> None:
     
     n_bindable_sites[site] -= 1     # Update count of bindable sites by site type.
     n_bound_prots_by_nuc[site][nuc] += 1   # Update count of bound proteins by site type and nucleotide state.
-    
-def unbind_protein(g: int, h: int, removal_reason: str) -> None:
-    # NEW: break all inter-protein bonds before unbinding.
-    # Handles both kinetic removal and forced site_loss removal.
-    for (g2, h2) in list(protein_bonds.get((g, h), set())):
-        break_protein_bond(g, h, g2, h2)
-
-    # ...rest unchanged...
     
 def unbind_protein(g: int, h: int, removal_reason: str) -> None:
     """All inter-protein bonds must be broken before unbinding.
