@@ -17,6 +17,7 @@
 import numpy as np
 from params import *
 from helpers import classify_pocket
+from oligo_geom_params import *
 
 # =============================================================
 # MT_lattice_matrix:    Shape (13, 300, 2)  
@@ -114,6 +115,11 @@ n_bonded_prots_by_nuc = {
     SITE_EDGELONG2: {NUC_GTP: 0, NUC_MIXED: 0, NUC_GDP: 0},
     SITE_EDGE3:     {NUC_GTP: 0, NUC_MIXED: 0, NUC_GDP: 0},
 }
+
+# Oligomers in solution and tethered oligomers
+oligomer_info = {}  # (g, h) → {'oligomer_id': int, 'subunit': int, 'size': int}
+tethered = {}  # (g, h) → int, number of tethered subunits pointing at this site (tethered = {(4, 29): 1})
+
 # =============================================================
 # SIMULATION
 # =============================================================
@@ -154,6 +160,7 @@ out_n_GDP_3     = []    # SITE_LAT3,   GDP or mixed pocket
 # =============================================================
 # TUBULIN LATTICE
 # All seed tubulins start as GTP (MT_lattice[:, :, 0] = 0, set by np.zeros). Every dimer in the seed is considered fully laterally bonded.
+MT_lattice[:, :seed_length, 0] = 1   # All seed tubulins are GDP (1 = GDP)
 MT_lattice[:n_pf - 1, :seed_length, 1] = 1  # PF0-PF11
 MT_lattice[n_pf - 1, :seed_length, 1] = 2   # PF12 (seam) has two lateral bonds per dimer in the seed, to two different tubulins on PF0 across the seam.
 
@@ -194,7 +201,9 @@ n_bound_prots_by_nuc = {
 for g in range(n_pf + 1):
     for h in range(seed_length):
         prot_sites[g, h, 0] = classify_pocket(g, h, pf_len)
-            
+
+
+
 # =============================================================
 # VALIDATION
 # =============================================================
@@ -212,8 +221,8 @@ def validate_initialization():
     assert highest_full_GDP == seed_length - 1, \
         f"highest_hydro should be {seed_length - 1}, got: {highest_full_GDP}"
 
-    assert np.all(MT_lattice[:, :, 0] == 0), \
-        "MT_lattice hydrolysis layer should be all-GTP (0) at start"
+    # assert np.all(MT_lattice[:, :, 0] == 0), \
+    #     "MT_lattice hydrolysis layer should be all-GTP (0) at start"
 
     assert np.all(MT_lattice[:n_pf - 1, :seed_length, 1] == 1), \
         "B-lattice PF0-11 should have right lateral bond count = 1 in seed"

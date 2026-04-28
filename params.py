@@ -153,7 +153,9 @@ lateral_stabilization_factor = 10.0
 # INTER-PROTEIN BOND PARAMETERS
 # -------------------------------------------------------------
 interaction_range              = 1      # 0 = same height only, 1 = ±1 height
-k_prot_bond_form               = 100.0/5  # s-1, 100.0 is k_lateralbond for tubulin
+k_prot_bond_form_same_h        = 100.0/5  # s-1, 100.0 is k_lateralbond for tubulin. Same height bond formation rate
+k_prot_bond_form_diff_h        = 20.0/5  # s-1, 100.0 is k_lateralbond for tubulin. ±1 height bond formation rate (slower)
+
 k_prot_bond_break              = 70.0/5   # s-1, 70.0 is k_lateralbreak_TT (nucleotide-independent)
 prot_bond_stabilization_factor = 10.0/5   # 10 is lateral_stabilization_factor for tubulin
 

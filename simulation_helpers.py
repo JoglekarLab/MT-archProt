@@ -332,6 +332,9 @@ def prot_is_doubly_bonded(g: int, h: int) -> bool:
     has_right = any(g2 == g + 1 for (g2, _) in bonds)
     return has_left and has_right
 
+def already_bonded_on_side(g, h, g2):
+    """True if (g,h) already has a bond towards groove g2's side."""
+    return any(g_b == g2 for (g_b, _) in protein_bonds.get((g, h), set()))
 
 def get_prot_bond_break_rate(g1: int, h1: int, g2: int, h2: int) -> float:
     """

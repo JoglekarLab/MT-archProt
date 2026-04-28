@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 import io
 from PIL import Image
+from datetime import datetime
 
 from params import *
 from helpers import classify_pocket
@@ -189,29 +190,29 @@ def generate_prot_bind_events():
 
 def generate_prot_remove_events():
     candidate_events = []
-    
-    def removable_prots(site, nuc):
-        return n_bound_prots_by_nuc[site][nuc] - n_bonded_prots_by_nuc[site][nuc]
 
-    n_gtp_edge = (removable_prots(SITE_EDGELAT2,  NUC_GTP) +
-                  removable_prots(SITE_EDGELONG2, NUC_GTP) +
-                  removable_prots(SITE_EDGE3,     NUC_GTP))
+    n_gtp_edge = n_gdp_edge = n_gtp_lattice = n_gdp_lattice = 0
 
-    n_gdp_edge = (removable_prots(SITE_EDGELAT2,  NUC_MIXED) + removable_prots(SITE_EDGELAT2,  NUC_GDP) +
-                  removable_prots(SITE_EDGELONG2, NUC_MIXED) + removable_prots(SITE_EDGELONG2, NUC_GDP) +
-                  removable_prots(SITE_EDGE3,     NUC_MIXED) + removable_prots(SITE_EDGE3,     NUC_GDP))
+    for (g, h) in bound_prots:
+        if prot_bond_count(g, h) > 0:
+            continue
+        site = int(prot_sites[g, h, 0])
+        nuc  = int(prot_sites[g, h, 1])
+        is_lattice = (site == SITE_LATTICE)
+        is_gdp     = (nuc != NUC_GTP)
 
-    n_gtp_lattice = removable_prots(SITE_LATTICE, NUC_GTP)
-    
-    n_gdp_lattice = (removable_prots(SITE_LATTICE, NUC_MIXED) + removable_prots(SITE_LATTICE, NUC_GDP))
+        if     is_lattice and not is_gdp: n_gtp_lattice += 1
+        elif   is_lattice and     is_gdp: n_gdp_lattice += 1
+        elif not is_lattice and not is_gdp: n_gtp_edge   += 1
+        elif not is_lattice and     is_gdp: n_gdp_edge   += 1
 
-    if n_gtp_edge > 0:
-        candidate_events.append(make_event('prot_remove_gtp_edge',    rate=koff_prot_GTP_1 * n_gtp_edge,    h=-1)) # Note h=-1 is just a placeholder, means nothing, it's just passed as the function needs it, but in reality the rate is for all sites
-    if n_gdp_edge > 0:
+    if n_gtp_edge     > 0:
+        candidate_events.append(make_event('prot_remove_gtp_edge',    rate=koff_prot_GTP_1 * n_gtp_edge,    h=-1))
+    if n_gdp_edge     > 0:
         candidate_events.append(make_event('prot_remove_gdp_edge',    rate=koff_prot_GDP_1 * n_gdp_edge,    h=-1))
-    if n_gtp_lattice > 0:
+    if n_gtp_lattice  > 0:
         candidate_events.append(make_event('prot_remove_gtp_lattice', rate=koff_prot_GTP_0 * n_gtp_lattice, h=-1))
-    if n_gdp_lattice > 0:
+    if n_gdp_lattice  > 0:
         candidate_events.append(make_event('prot_remove_gdp_lattice', rate=koff_prot_GDP_0 * n_gdp_lattice, h=-1))
 
     return candidate_events
@@ -223,14 +224,19 @@ def generate_prot_bond_form_events():
     """
     candidate_events = []
     for (g, h) in bound_prots:
-        for (g2, h2) in get_protein_neighbors(g, h):
+        for (g2, h2) in get_possible_protein_neighbors(g, h):
             if g2 <= g: # g2 <= g filter avoids generating each pair twice.
+                continue
+            if already_bonded_on_side(g, h, g2):
+                continue
+            if already_bonded_on_side(g2, h2, g):
                 continue
             if not get_pocket_is_bound(g2, h2):
                 continue
             if (g2, h2) in protein_bonds.get((g, h), set()): # Already bonded with each other
                 continue
-            event = make_event('prot_bond_form', rate=k_prot_bond_form, h=h, g=g)
+            rate_bond = k_prot_bond_form_same_h if h == h2 else k_prot_bond_form_diff_h
+            event = make_event('prot_bond_form', rate=rate_bond, h=h, g=g)
             event['g2'] = g2
             event['h2'] = h2
             candidate_events.append(event)
@@ -402,62 +408,77 @@ def execute_prot_bond_break(event: dict) -> None:
 # -----------------------------------------------------------
 
 frames = []  # collects one PIL image per snapshot
-    
+
 def plot_pf_lengths_and_lattice_occupancy():
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 4))
+    # 2-row layout: top row has tip region + full lattice, bottom row has protein bonds at tip
+    fig = plt.figure(figsize=(14, 16))
+    ax1 = fig.add_subplot(2, 2, 1)  # top-left:  tip region
+    ax2 = fig.add_subplot(2, 2, 2)  # top-right: full lattice
+    ax3 = fig.add_subplot(2, 1, 2)  # bottom:    protein bonds at tip (full width)
 
-    # --- left: PF lengths bar chart (no gaps) ---
-    ax1.bar(np.arange(n_pf), pf_len.copy(), width=1.0, edgecolor='blue', linewidth=0.3)
-    ax1.set_xlabel("Protofilament")
-    ax1.set_ylabel("Length")
-    ax1.set_title(f"PF lengths at t = {time_elapsed:.4f} s")
-    
-    # --- right: lattice occupancy with protein overlay and GTP/GDP coloring ---
-    max_h = int(pf_len.max())
-    lattice_img = np.zeros((max_h, n_pf), dtype=int)
-    for pf in range(n_pf):
-        for h in range(pf_len[pf]):
-            if MT_lattice[pf, h, 0] == 0:
-                lattice_img[h, pf] = 1   # GTP
-            else:
-                lattice_img[h, pf] = 2   # GDP
+    max_h    = int(pf_len.max())
+    tip_window = 80
+    tip_start  = max(0, max_h - tip_window)
 
-    cmap = matplotlib.colors.ListedColormap(['white', '#0a2472', '#4a90d9'])  # 0 = background (white), 1 = GTP (dark blue), 2 = GDP (medium blue)
-    im = ax2.imshow(lattice_img, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
-    ax2.set_xlabel("Protofilament")
-    ax2.set_ylabel("Height")
-    ax2.set_title(f"Lattice + protein occupancy at t = {time_elapsed:.4f} s")
-    
-    # fig.colorbar(im, ax=ax2, label="Tubulin present")
-    # cbar = fig.colorbar(im, ax=ax2, ticks=[1, 2])
-    # cbar.ax.set_yticklabels(['GTP', 'GDP'])
-    
-    # legend_elements = [
-    #     Patch(facecolor='#4a90d9', label='GTP'),
-    #     Patch(facecolor='#0a2472', label='GDP'),
-    # ]
+    cmap = matplotlib.colors.ListedColormap(['white', '#0a2472', '#4a90d9'])
     legend_elements = [
         Patch(facecolor='#0a2472', label='GTP'),
         Patch(facecolor='#4a90d9', label='GDP'),
     ]
+
+    # --- ax1: tip region ---
+    tip_img = np.zeros((max_h - tip_start, n_pf), dtype=int)
+    for pf in range(n_pf):
+        for h in range(tip_start, pf_len[pf]):
+            tip_img[h - tip_start, pf] = 1 if MT_lattice[pf, h, 0] == 0 else 2
+
+    ax1.imshow(tip_img, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
+    ax1.set_xlabel("Protofilament")
+    ax1.set_ylabel(f"Height (rows {tip_start}–{max_h})")
+    ax1.set_title(f"Tip region at t = {time_elapsed:.4f} s")
+    ax1.set_yticks(np.arange(0, max_h - tip_start, 5))
+    ax1.set_yticklabels(np.arange(tip_start, max_h, 5))
+    ax1.legend(handles=legend_elements, loc='upper right')
+
+    for pf in range(n_pf - 1):
+        for h in range(max(seed_length, tip_start), pf_len[pf]):
+            if right_bond_count(pf, h) > 0:
+                ax1.plot([pf + 0.3, pf + 0.7], [h - tip_start, h - tip_start], color='orange', linewidth=1.5)
+
+    for h in range(max(seed_length, tip_start), pf_len[n_pf - 1]):
+        bc = right_bond_count(n_pf - 1, h)
+        if bc == 1:
+            ax1.plot([n_pf - 1 + 0.3, n_pf - 1 + 0.45], [h - tip_start, h - tip_start], color='yellow', linewidth=1.5)
+        elif bc == 2:
+            ax1.plot([n_pf - 1 + 0.3, n_pf - 1 + 0.45], [h - tip_start, h - tip_start], color='red', linewidth=1.5)
+
+    for g in range(1, n_pf):
+        for h in range(tip_start, max_h):
+            if prot_sites[g, h, 2] == 1:
+                ax1.plot(g - 0.5, h - tip_start, '.', color='#00FF00', markersize=8)
+
+    # --- ax2: full lattice ---
+    lattice_img = np.zeros((max_h, n_pf), dtype=int)
+    for pf in range(n_pf):
+        for h in range(pf_len[pf]):
+            lattice_img[h, pf] = 1 if MT_lattice[pf, h, 0] == 0 else 2
+
+    ax2.imshow(lattice_img, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
+    ax2.set_xlabel("Protofilament")
+    ax2.set_ylabel("Height")
+    ax2.set_title(f"Full lattice at t = {time_elapsed:.4f} s")
     ax2.legend(handles=legend_elements, loc='upper right')
 
-    # overlay bound proteins as dots
-    for g in range(1, n_pf):  # skip seam grooves 0 and n_pf
+    for g in range(1, n_pf):
         for h in range(max_h):
             if prot_sites[g, h, 2] == 1:
-                ax2.plot(g - 0.5, h, '.', color='#00FF00', markersize=8)  # g-0.5 centers the dot between the two PFs
+                ax2.plot(g - 0.5, h, '.', color='#00FF00', markersize=8)
 
-    # overlay lateral bonds as horizontal lines between PF columns
-    # each cell in imshow is centered at x=pf, so the gap between pf and pf+1 spans x=[pf+0.5, pf+1-0.5]
-    # we draw a short line from pf+0.1 to pf+0.9 at height h
-    for pf in range(n_pf - 1):  # PF0-11: right bond connects pf to pf+1
+    for pf in range(n_pf - 1):
         for h in range(seed_length, pf_len[pf]):
             if right_bond_count(pf, h) > 0:
                 ax2.plot([pf + 0.3, pf + 0.7], [h, h], color='orange', linewidth=1.5)
 
-    # seam: PF12 bonds to PF0, drawn on the right edge of PF12 (x = n_pf - 1 + 0.5 area)
-    # since PF0 is at x=0 and PF12 is at x=12, the seam wraps; mark it on PF12's right side
     for h in range(seed_length, pf_len[n_pf - 1]):
         bc = right_bond_count(n_pf - 1, h)
         if bc == 1:
@@ -465,13 +486,246 @@ def plot_pf_lengths_and_lattice_occupancy():
         elif bc == 2:
             ax2.plot([n_pf - 1 + 0.3, n_pf - 1 + 0.45], [h, h], color='red', linewidth=1.5)
 
-    # render to in-memory buffer and store as PIL image
-    buf = io.BytesIO() # Creates a fake file that lives in RAM instead of on disk
-    fig.savefig(buf, format='png', bbox_inches='tight') # Write the figure to the RAM buffer
+    # --- ax3: protein bonds at tip region ---
+    tip_img3 = np.zeros((max_h - tip_start, n_pf), dtype=int)
+    for pf in range(n_pf):
+        for h in range(tip_start, pf_len[pf]):
+            tip_img3[h - tip_start, pf] = 1 if MT_lattice[pf, h, 0] == 0 else 2
+
+    ax3.imshow(tip_img3, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
+    ax3.set_xlabel("Protofilament")
+    ax3.set_ylabel(f"Height (rows {tip_start}–{max_h})")
+    ax3.set_title(f"Inter-protein bonds at tip, t = {time_elapsed:.4f} s  "
+                  f"({len(protein_bonds)} bonded proteins, "
+                  f"{sum(len(v) for v in protein_bonds.values()) // 2} bonds)")
+    ax3.set_yticks(np.arange(0, max_h - tip_start, 5))
+    ax3.set_yticklabels(np.arange(tip_start, max_h, 5))
+
+    # draw all bound proteins in tip region
+    for g in range(1, n_pf):
+        for h in range(tip_start, max_h):
+            if prot_sites[g, h, 2] == 1:
+                color = '#00CC00' if (g, h) in protein_bonds else '#9ACD32'
+                ax3.plot(g - 0.5, h - tip_start, 'o', color=color, markersize=7, zorder=3)
+
+    # draw inter-protein bond lines (only if both proteins are in tip window)
+    drawn_bonds = set()
+    for (g1, h1), neighbors in protein_bonds.items():
+        if g1 < 1 or g1 >= n_pf or h1 < tip_start:
+            continue
+        for (g2, h2) in neighbors:
+            if g2 < 1 or g2 >= n_pf or h2 < tip_start:
+                continue
+            bond_key = (min(g1, g2), min(h1, h2), max(g1, g2), max(h1, h2))
+            if bond_key in drawn_bonds:
+                continue
+            drawn_bonds.add(bond_key)
+            ax3.plot([g1 - 0.5, g2 - 0.5], [h1 - tip_start, h2 - tip_start],
+                     '-', color='red', linewidth=1.5, zorder=2)
+
+    bond_legend = [
+        Patch(facecolor='#0a2472', label='GTP'),
+        Patch(facecolor='#4a90d9', label='GDP'),
+        plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#9ACD32',
+                   markersize=7, label='unbound protein'),
+        plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#00CC00',
+                   markersize=7, label='bonded protein'),
+        plt.Line2D([0], [0], color='red', linewidth=1.5, label='inter-protein bond'),
+    ]
+    ax3.legend(handles=bond_legend, loc='upper right')
+
+    fig.tight_layout()
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight')
     buf.seek(0)
-    frames.append(Image.open(buf).copy()) # will read image from first line thanks to buf.seek(0)
-    buf.close() # Frees the RAM used by the buffer
+    frames.append(Image.open(buf).copy())
+    buf.close()
     plt.close(fig)
+    
+# def plot_pf_lengths_and_lattice_occupancy():
+#     # 2-row layout: top row has PF lengths + lattice, bottom row has protein bonds
+#     fig = plt.figure(figsize=(14, 8))
+#     ax1 = fig.add_subplot(2, 2, 1)  # top-left:  PF lengths
+#     ax2 = fig.add_subplot(2, 2, 2)  # top-right: lattice occupancy
+#     ax3 = fig.add_subplot(2, 1, 2)  # bottom:    protein bonds (full width)
+
+#     # --- ax1: PF lengths bar chart ---
+#     ax1.bar(np.arange(n_pf), pf_len.copy(), width=1.0, edgecolor='blue', linewidth=0.3)
+#     ax1.set_xlabel("Protofilament")
+#     ax1.set_ylabel("Length")
+#     ax1.set_title(f"PF lengths at t = {time_elapsed:.4f} s")
+
+#     # --- ax2: lattice occupancy ---
+#     max_h = int(pf_len.max())
+#     lattice_img = np.zeros((max_h, n_pf), dtype=int)
+#     for pf in range(n_pf):
+#         for h in range(pf_len[pf]):
+#             if MT_lattice[pf, h, 0] == 0:
+#                 lattice_img[h, pf] = 1   # GTP
+#             else:
+#                 lattice_img[h, pf] = 2   # GDP
+
+#     cmap = matplotlib.colors.ListedColormap(['white', '#0a2472', '#4a90d9'])
+#     ax2.imshow(lattice_img, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
+#     ax2.set_xlabel("Protofilament")
+#     ax2.set_ylabel("Height")
+#     ax2.set_title(f"Lattice + protein occupancy at t = {time_elapsed:.4f} s")
+
+#     legend_elements = [
+#         Patch(facecolor='#0a2472', label='GTP'),
+#         Patch(facecolor='#4a90d9', label='GDP'),
+#     ]
+#     ax2.legend(handles=legend_elements, loc='upper right')
+
+#     for g in range(1, n_pf):
+#         for h in range(max_h):
+#             if prot_sites[g, h, 2] == 1:
+#                 ax2.plot(g - 0.5, h, '.', color='#00FF00', markersize=8)
+
+#     for pf in range(n_pf - 1):
+#         for h in range(seed_length, pf_len[pf]):
+#             if right_bond_count(pf, h) > 0:
+#                 ax2.plot([pf + 0.3, pf + 0.7], [h, h], color='orange', linewidth=1.5)
+
+#     for h in range(seed_length, pf_len[n_pf - 1]):
+#         bc = right_bond_count(n_pf - 1, h)
+#         if bc == 1:
+#             ax2.plot([n_pf - 1 + 0.3, n_pf - 1 + 0.45], [h, h], color='yellow', linewidth=1.5)
+#         elif bc == 2:
+#             ax2.plot([n_pf - 1 + 0.3, n_pf - 1 + 0.45], [h, h], color='red', linewidth=1.5)
+
+#     # --- ax3: replica of ax2 with inter-protein bond overlay ---
+#     groove_img2 = np.zeros((max_h, n_pf), dtype=int)
+#     for pf in range(n_pf):
+#         for h in range(pf_len[pf]):
+#             if MT_lattice[pf, h, 0] == 0:
+#                 groove_img2[h, pf] = 1   # GTP
+#             else:
+#                 groove_img2[h, pf] = 2   # GDP
+
+#     cmap2 = matplotlib.colors.ListedColormap(['white', '#0a2472', '#4a90d9'])
+#     ax3.imshow(groove_img2, origin='lower', aspect='auto', cmap=cmap2, vmin=0, vmax=2)
+#     ax3.set_xlabel("Protofilament")
+#     ax3.set_ylabel("Height")
+#     ax3.set_title(f"Inter-protein bonds at t = {time_elapsed:.4f} s  "
+#                   f"({len(protein_bonds)} bonded proteins, "
+#                   f"{sum(len(v) for v in protein_bonds.values()) // 2} bonds)")
+
+#     # draw all bound proteins: unbound in light yellowish-green, bonded in bright green
+#     for g in range(1, n_pf):
+#         for h in range(max_h):
+#             if prot_sites[g, h, 2] == 1:
+#                 color = '#00CC00' if (g, h) in protein_bonds else '#9ACD32'
+#                 ax3.plot(g - 0.5, h, 'o', color=color, markersize=7, zorder=3)
+
+#     # draw inter-protein bond lines
+#     drawn_bonds = set()
+#     for (g1, h1), neighbors in protein_bonds.items():
+#         if g1 < 1 or g1 >= n_pf:
+#             continue
+#         for (g2, h2) in neighbors:
+#             if g2 < 1 or g2 >= n_pf:
+#                 continue
+#             bond_key = (min(g1, g2), min(h1, h2), max(g1, g2), max(h1, h2))
+#             if bond_key in drawn_bonds:
+#                 continue
+#             drawn_bonds.add(bond_key)
+#             ax3.plot([g1 - 0.5, g2 - 0.5], [h1, h2], '-', color='red',
+#                      linewidth=1.5, zorder=2)
+
+#     ax3.set_xticks(np.arange(n_pf))
+#     ax3.set_xticklabels(np.arange(n_pf))
+
+#     bond_legend = [
+#         Patch(facecolor='#0a2472', label='GTP'),
+#         Patch(facecolor='#4a90d9', label='GDP'),
+#         plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#9ACD32',
+#                    markersize=7, label='unbound protein'),
+#         plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#00CC00',
+#                    markersize=7, label='bonded protein'),
+#         plt.Line2D([0], [0], color='red', linewidth=1.5, label='inter-protein bond'),
+#     ]
+#     ax3.legend(handles=bond_legend, loc='upper right')
+
+#     fig.tight_layout()
+
+#     buf = io.BytesIO()
+#     fig.savefig(buf, format='png', bbox_inches='tight')
+#     buf.seek(0)
+#     frames.append(Image.open(buf).copy())
+#     buf.close()
+#     plt.close(fig)
+    
+# def plot_pf_lengths_and_lattice_occupancy():
+#     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 4))
+
+#     # --- left: PF lengths bar chart (no gaps) ---
+#     ax1.bar(np.arange(n_pf), pf_len.copy(), width=1.0, edgecolor='blue', linewidth=0.3)
+#     ax1.set_xlabel("Protofilament")
+#     ax1.set_ylabel("Length")
+#     ax1.set_title(f"PF lengths at t = {time_elapsed:.4f} s")
+    
+#     # --- right: lattice occupancy with protein overlay and GTP/GDP coloring ---
+#     max_h = int(pf_len.max())
+#     lattice_img = np.zeros((max_h, n_pf), dtype=int)
+#     for pf in range(n_pf):
+#         for h in range(pf_len[pf]):
+#             if MT_lattice[pf, h, 0] == 0:
+#                 lattice_img[h, pf] = 1   # GTP
+#             else:
+#                 lattice_img[h, pf] = 2   # GDP
+
+#     cmap = matplotlib.colors.ListedColormap(['white', '#0a2472', '#4a90d9'])  # 0 = background (white), 1 = GTP (dark blue), 2 = GDP (medium blue)
+#     im = ax2.imshow(lattice_img, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
+#     ax2.set_xlabel("Protofilament")
+#     ax2.set_ylabel("Height")
+#     ax2.set_title(f"Lattice + protein occupancy at t = {time_elapsed:.4f} s")
+    
+#     # fig.colorbar(im, ax=ax2, label="Tubulin present")
+#     # cbar = fig.colorbar(im, ax=ax2, ticks=[1, 2])
+#     # cbar.ax.set_yticklabels(['GTP', 'GDP'])
+    
+#     # legend_elements = [
+#     #     Patch(facecolor='#4a90d9', label='GTP'),
+#     #     Patch(facecolor='#0a2472', label='GDP'),
+#     # ]
+#     legend_elements = [
+#         Patch(facecolor='#0a2472', label='GTP'),
+#         Patch(facecolor='#4a90d9', label='GDP'),
+#     ]
+#     ax2.legend(handles=legend_elements, loc='upper right')
+
+#     # overlay bound proteins as dots
+#     for g in range(1, n_pf):  # skip seam grooves 0 and n_pf
+#         for h in range(max_h):
+#             if prot_sites[g, h, 2] == 1:
+#                 ax2.plot(g - 0.5, h, '.', color='#00FF00', markersize=8)  # g-0.5 centers the dot between the two PFs
+
+#     # overlay lateral bonds as horizontal lines between PF columns
+#     # each cell in imshow is centered at x=pf, so the gap between pf and pf+1 spans x=[pf+0.5, pf+1-0.5]
+#     # we draw a short line from pf+0.1 to pf+0.9 at height h
+#     for pf in range(n_pf - 1):  # PF0-11: right bond connects pf to pf+1
+#         for h in range(seed_length, pf_len[pf]):
+#             if right_bond_count(pf, h) > 0:
+#                 ax2.plot([pf + 0.3, pf + 0.7], [h, h], color='orange', linewidth=1.5)
+
+#     # seam: PF12 bonds to PF0, drawn on the right edge of PF12 (x = n_pf - 1 + 0.5 area)
+#     # since PF0 is at x=0 and PF12 is at x=12, the seam wraps; mark it on PF12's right side
+#     for h in range(seed_length, pf_len[n_pf - 1]):
+#         bc = right_bond_count(n_pf - 1, h)
+#         if bc == 1:
+#             ax2.plot([n_pf - 1 + 0.3, n_pf - 1 + 0.45], [h, h], color='yellow', linewidth=1.5)
+#         elif bc == 2:
+#             ax2.plot([n_pf - 1 + 0.3, n_pf - 1 + 0.45], [h, h], color='red', linewidth=1.5)
+
+#     # render to in-memory buffer and store as PIL image
+#     buf = io.BytesIO() # Creates a fake file that lives in RAM instead of on disk
+#     fig.savefig(buf, format='png', bbox_inches='tight') # Write the figure to the RAM buffer
+#     buf.seek(0)
+#     frames.append(Image.open(buf).copy()) # will read image from first line thanks to buf.seek(0)
+#     buf.close() # Frees the RAM used by the buffer
+#     plt.close(fig)
     
 def print_selected_event(event):
     """
@@ -517,15 +771,14 @@ def print_candidate_events(candidates):
 # MAIN LOOP (tubulin addition only)
 # -----------------------------------------------------------
 
-n_iterations = 1000
-snapshot_freq = 10
+n_iterations = 10000
+snapshot_freq = 250
+print_freq = 1000   # steps between console prints (0 = never print)
 
 def run_simulation():
     global time_elapsed
 
     for step in range(1, n_iterations + 1):
-
-        print(f"\n=== STEP {step} ===")
 
         # --- build candidate list ---
         candidates = (generate_tub_add_events()
@@ -535,17 +788,18 @@ def run_simulation():
                     + generate_prot_bind_events()
                     + generate_prot_remove_events()
                     + generate_prot_bond_form_events()
-                    + generate_prot_bond_break_events())    
-        
-        print_candidate_events(candidates)
+                    + generate_prot_bond_break_events())  
 
         # --- pick fastest event ---
         event = choose_next_event(candidates)
         if event is None:
             print(f"No candidates at step {step}, stopping.")
             break
-
-        print_selected_event(event)
+        
+        if print_freq > 0 and step % print_freq == 0:
+            print(f"\n=== STEP {step} ===")  
+            print_candidate_events(candidates)
+            print_selected_event(event)
 
         # --- advance time ---
         time_elapsed += event['dt']
@@ -588,8 +842,9 @@ def run_simulation():
 run_simulation()
 
 if frames:
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     frames[0].save(
-        "simulation.gif",
+        f"simulation_{timestamp}.gif",
         save_all=True,
         append_images=frames[1:],
         duration=500,   # ms per frame
