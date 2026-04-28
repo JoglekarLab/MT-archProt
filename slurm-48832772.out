@@ -1,0 +1,1970 @@
+Initialization validation passed.
+
+Initialization complete.
+  MT_lattice shape  : (13, 300, 2)
+  prot_sites shape  : (14, 300, 3)
+  pf_len            : [25 25 25 25 25 25 25 25 25 25 25 25 25]
+  highest_lat       : [24 24 24 24 24 24 24 24 24 24 24 24 24]
+  highest_hydro     : 24
+  time_elapsed      : 0.0
+  Tip row site types: ['SEAM', 'EDGELAT2', 'EDGELAT2', 'EDGELAT2', 'EDGELAT2', 'EDGELAT2', 'EDGELAT2', 'EDGELAT2', 'EDGELAT2', 'EDGELAT2', 'EDGELAT2', 'EDGELAT2', 'EDGELAT2', 'SEAM']
+  After execution:
+    t=1.2775s
+    pf_len       = [25, 25, 25, 25, 34, 25, 25, 25, 29, 25, 28, 28, 26]
+    highest_lat  = [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 27, 25, 24]
+    mean_len=26.5  max=34  min=25
+  After execution:
+    t=1.7702s
+    pf_len       = [25, 25, 25, 25, 37, 25, 29, 25, 35, 30, 32, 32, 30]
+    highest_lat  = [24, 24, 24, 24, 24, 24, 24, 24, 28, 29, 31, 29, 24]
+    mean_len=28.8  max=37  min=25
+  After execution:
+    t=2.2089s
+    pf_len       = [25, 30, 25, 25, 36, 26, 33, 25, 39, 30, 35, 36, 34]
+    highest_lat  = [24, 24, 24, 24, 25, 25, 24, 24, 28, 28, 34, 32, 24]
+    mean_len=30.7  max=39  min=25
+
+=== STEP 1000 ===
+  Candidate events:
+     1. type=lat_bond_break pf=8    g=None h=33   rate=70 dt=0.00284542
+     2. type=tub_add    pf=10   g=None h=40   rate=7.8 dt=0.00396571
+     3. type=lat_bond_form pf=0    g=None h=26   rate=100 dt=0.00492795
+     4. type=lat_bond_break pf=10   g=None h=37   rate=70 dt=0.00636528
+     5. type=lat_bond_break pf=9    g=None h=34   rate=70 dt=0.00717478
+     6. type=tub_add    pf=11   g=None h=38   rate=7.8 dt=0.00844958
+     7. type=lat_bond_form pf=8    g=None h=34   rate=100 dt=0.009506
+     8. type=prot_bind_edge pf=None g=None h=0    rate=22.72 dt=0.0205556
+     9. type=lat_bond_form pf=9    g=None h=35   rate=100 dt=0.0216846
+    10. type=prot_bond_form pf=None g=9    h=30   rate=20 dt=0.0226015
+    11. type=tub_add    pf=2    g=None h=25   rate=7.8 dt=0.0232513
+    12. type=tub_add    pf=5    g=None h=25   rate=7.8 dt=0.0416721
+    13. type=lat_bond_break pf=11   g=None h=35   rate=7 dt=0.0426991
+    14. type=tub_add    pf=9    g=None h=37   rate=7.8 dt=0.0593101
+    15. type=tub_add    pf=3    g=None h=25   rate=7.8 dt=0.0615906
+    16. type=lat_bond_break pf=0    g=None h=25   rate=7 dt=0.0740201
+    17. type=tub_add    pf=7    g=None h=25   rate=7.8 dt=0.133869
+    18. type=tub_add    pf=4    g=None h=36   rate=7.8 dt=0.138185
+    19. type=tub_add    pf=0    g=None h=27   rate=7.8 dt=0.166625
+    20. type=tub_add    pf=1    g=None h=32   rate=7.8 dt=0.232338
+    21. type=tub_add    pf=8    g=None h=40   rate=7.8 dt=0.272726
+    22. type=tub_add    pf=12   g=None h=36   rate=7.8 dt=0.384769
+    23. type=tub_add    pf=6    g=None h=37   rate=7.8 dt=0.436517
+    24. type=prot_remove_gtp_edge pf=None g=None h=-1   rate=2.9 dt=0.439641
+    25. type=prot_remove_gtp_lattice pf=None g=None h=-1   rate=1.16 dt=0.607964
+    26. type=prot_bind_lattice pf=None g=None h=0    rate=0.966 dt=0.716789
+    27. type=tub_removal pf=4    g=None h=35   rate=0.2 dt=2.44834
+    28. type=tub_removal pf=6    g=None h=36   rate=0.2 dt=2.83186
+    29. type=tub_removal pf=0    g=None h=26   rate=0.2 dt=3.17575
+    30. type=tub_removal pf=9    g=None h=36   rate=0.2 dt=6.20987
+    31. type=tub_removal pf=8    g=None h=39   rate=0.2 dt=11.1157
+    32. type=tub_removal pf=1    g=None h=31   rate=0.2 dt=15.2001
+    33. type=tub_removal pf=10   g=None h=39   rate=0.2 dt=19.2989
+  Selected event: type=lat_bond_break pf=8 g=None h=33 rate=70 dt=0.00284542
+  After execution:
+    t=2.6576s
+    pf_len       = [27, 32, 25, 25, 36, 25, 37, 25, 40, 37, 40, 38, 36]
+    highest_lat  = [25, 24, 24, 24, 24, 24, 24, 24, 32, 34, 37, 35, 24]
+    mean_len=32.5  max=40  min=25
+  After execution:
+    t=2.9669s
+    pf_len       = [29, 33, 25, 25, 40, 28, 38, 25, 41, 39, 42, 41, 37]
+    highest_lat  = [28, 24, 24, 24, 25, 26, 24, 24, 35, 35, 36, 36, 26]
+    mean_len=34.1  max=42  min=25
+  After execution:
+    t=3.2839s
+    pf_len       = [31, 35, 28, 25, 44, 33, 39, 27, 43, 39, 45, 39, 37]
+    highest_lat  = [30, 27, 24, 24, 31, 32, 26, 26, 35, 37, 37, 36, 28]
+    mean_len=35.8  max=45  min=25
+  After execution:
+    t=3.5323s
+    pf_len       = [33, 38, 28, 27, 48, 34, 41, 32, 45, 41, 50, 40, 39]
+    highest_lat  = [30, 27, 26, 26, 26, 28, 27, 27, 35, 40, 39, 38, 30]
+    mean_len=38.2  max=50  min=27
+
+=== STEP 2000 ===
+  Candidate events:
+     1. type=lat_bond_form pf=10   g=None h=41   rate=100 dt=0.000796468
+     2. type=lat_bond_form pf=7    g=None h=31   rate=100 dt=0.00203096
+     3. type=prot_bind_edge pf=None g=None h=0    rate=27.84 dt=0.00254082
+     4. type=lat_bond_form pf=9    g=None h=40   rate=100 dt=0.00255225
+     5. type=lat_bond_form pf=8    g=None h=39   rate=100 dt=0.0042743
+     6. type=tub_add    pf=12   g=None h=40   rate=7.8 dt=0.00434601
+     7. type=tub_add    pf=3    g=None h=29   rate=7.8 dt=0.00569313
+     8. type=lat_bond_break pf=12   g=None h=31   rate=14 dt=0.00693555
+     9. type=tub_add    pf=1    g=None h=40   rate=7.8 dt=0.00754024
+    10. type=lat_bond_break pf=5    g=None h=33   rate=70 dt=0.00775753
+    11. type=prot_bond_form pf=None g=8    h=31   rate=20 dt=0.00791911
+    12. type=lat_bond_break pf=9    g=None h=39   rate=70 dt=0.00943372
+    13. type=prot_remove_gdp_lattice pf=None g=None h=-1   rate=1.7 dt=0.00962247
+    14. type=lat_bond_break pf=10   g=None h=40   rate=70 dt=0.0101283
+    15. type=lat_bond_form pf=0    g=None h=33   rate=100 dt=0.0108026
+    16. type=lat_bond_form pf=6    g=None h=31   rate=100 dt=0.0112837
+    17. type=lat_bond_break pf=4    g=None h=31   rate=70 dt=0.0126639
+    18. type=tub_add    pf=0    g=None h=34   rate=7.8 dt=0.0150543
+    19. type=lat_bond_form pf=3    g=None h=28   rate=100 dt=0.0208071
+    20. type=lat_bond_break pf=7    g=None h=30   rate=9 dt=0.0233912
+    21. type=lat_bond_form pf=4    g=None h=32   rate=100 dt=0.0277449
+    22. type=prot_bond_form pf=None g=7    h=30   rate=20 dt=0.0334979
+    23. type=prot_bond_break pf=None g=8    h=30   rate=14 dt=0.0393085
+    24. type=lat_bond_break pf=1    g=None h=29   rate=7 dt=0.0406727
+    25. type=tub_add    pf=8    g=None h=46   rate=7.8 dt=0.0448005
+    26. type=lat_bond_break pf=3    g=None h=27   rate=7 dt=0.0465431
+    27. type=lat_bond_break pf=8    g=None h=38   rate=70 dt=0.0466853
+    28. type=tub_add    pf=7    g=None h=32   rate=7.8 dt=0.0496864
+    29. type=prot_bond_form pf=None g=9    h=30   rate=20 dt=0.0511134
+    30. type=lat_bond_break pf=11   g=None h=39   rate=7 dt=0.0581586
+    31. type=tub_add    pf=4    g=None h=50   rate=7.8 dt=0.0586397
+    32. type=tub_add    pf=6    g=None h=41   rate=7.8 dt=0.0802308
+    33. type=lat_bond_break pf=0    g=None h=32   rate=7 dt=0.0917337
+    34. type=tub_add    pf=5    g=None h=34   rate=7.8 dt=0.0958275
+    35. type=tub_add    pf=2    g=None h=30   rate=7.8 dt=0.101222
+    36. type=tub_removal pf=6    g=None h=40   rate=0.2 dt=0.118434
+    37. type=tub_add    pf=9    g=None h=41   rate=7.8 dt=0.134735
+    38. type=lat_bond_break pf=6    g=None h=30   rate=7 dt=0.135799
+    39. type=prot_bond_form pf=None g=7    h=30   rate=20 dt=0.167026
+    40. type=tub_add    pf=10   g=None h=50   rate=7.8 dt=0.190755
+    41. type=prot_remove_gtp_edge pf=None g=None h=-1   rate=26.1 dt=0.196982
+    42. type=tub_add    pf=11   g=None h=44   rate=7.8 dt=0.370733
+    43. type=lat_bond_break pf=2    g=None h=28   rate=7 dt=0.593357
+    44. type=prot_remove_gtp_lattice pf=None g=None h=-1   rate=1.16 dt=0.66383
+    45. type=tub_removal pf=8    g=None h=45   rate=0.2 dt=1.10274
+    46. type=tub_removal pf=7    g=None h=31   rate=0.2 dt=1.83363
+    47. type=tub_removal pf=11   g=None h=43   rate=0.2 dt=2.0781
+    48. type=tub_removal pf=1    g=None h=39   rate=0.2 dt=2.20759
+    49. type=tub_removal pf=4    g=None h=49   rate=0.2 dt=2.37156
+    50. type=prot_bind_lattice pf=None g=None h=0    rate=0.851 dt=2.6373
+    51. type=tub_removal pf=0    g=None h=33   rate=0.2 dt=4.3982
+    52. type=tub_removal pf=10   g=None h=49   rate=0.2 dt=11.8523
+    53. type=tub_removal pf=9    g=None h=40   rate=0.2 dt=12.959
+  Selected event: type=lat_bond_form pf=10 g=None h=41 rate=100 dt=0.000796468
+  After execution:
+    t=3.7792s
+    pf_len       = [34, 40, 30, 29, 50, 34, 41, 32, 46, 41, 50, 44, 40]
+    highest_lat  = [32, 29, 28, 27, 31, 33, 30, 30, 38, 39, 41, 39, 31]
+    mean_len=39.3  max=50  min=29
+  After execution:
+    t=3.9611s
+    pf_len       = [34, 41, 31, 31, 54, 37, 42, 35, 49, 43, 53, 47, 41]
+    highest_lat  = [33, 30, 30, 30, 30, 33, 34, 34, 35, 42, 46, 40, 31]
+    mean_len=41.4  max=54  min=31
+  After execution:
+    t=4.1729s
+    pf_len       = [36, 46, 33, 31, 56, 38, 46, 38, 49, 43, 54, 49, 44]
+    highest_lat  = [35, 32, 30, 30, 34, 35, 37, 37, 41, 41, 42, 41, 33]
+    mean_len=43.3  max=56  min=31
+  After execution:
+    t=4.4309s
+    pf_len       = [37, 48, 36, 34, 57, 39, 47, 39, 53, 48, 56, 51, 46]
+    highest_lat  = [36, 35, 33, 33, 38, 38, 37, 37, 44, 46, 49, 44, 34]
+    mean_len=45.5  max=57  min=34
+
+=== STEP 3000 ===
+  Candidate events:
+     1. type=lat_bond_form pf=11   g=None h=47   rate=100 dt=0.00111089
+     2. type=lat_bond_break pf=5    g=None h=39   rate=70 dt=0.00185183
+     3. type=lat_bond_form pf=7    g=None h=39   rate=100 dt=0.0019452
+     4. type=lat_bond_break pf=8    g=None h=50   rate=70 dt=0.0021742
+     5. type=tub_add    pf=7    g=None h=40   rate=7.8 dt=0.00249115
+     6. type=lat_bond_break pf=1    g=None h=38   rate=70 dt=0.00449241
+     7. type=lat_bond_form pf=6    g=None h=39   rate=100 dt=0.00596632
+     8. type=tub_add    pf=4    g=None h=56   rate=7.8 dt=0.00613114
+     9. type=lat_bond_form pf=0    g=None h=38   rate=100 dt=0.00702003
+    10. type=lat_bond_break pf=12   g=None h=36   rate=14 dt=0.011946
+    11. type=lat_bond_form pf=10   g=None h=51   rate=100 dt=0.012352
+    12. type=tub_add    pf=1    g=None h=48   rate=7.8 dt=0.012808
+    13. type=tub_add    pf=3    g=None h=35   rate=7.8 dt=0.013841
+    14. type=lat_bond_form pf=9    g=None h=49   rate=100 dt=0.0158788
+    15. type=lat_bond_form pf=4    g=None h=37   rate=100 dt=0.016774
+    16. type=tub_add    pf=12   g=None h=48   rate=7.8 dt=0.0181865
+    17. type=prot_bond_break pf=None g=4    h=48   rate=14 dt=0.0185023
+    18. type=prot_bond_form pf=None g=9    h=30   rate=20 dt=0.0185314
+    19. type=prot_bond_break pf=None g=1    h=34   rate=14 dt=0.0216655
+    20. type=lat_bond_break pf=10   g=None h=50   rate=70 dt=0.0221562
+    21. type=prot_bind_edge pf=None g=None h=0    rate=30.08 dt=0.0241498
+    22. type=lat_bond_break pf=4    g=None h=36   rate=70 dt=0.0275939
+    23. type=tub_add    pf=6    g=None h=49   rate=7.8 dt=0.0336191
+    24. type=prot_remove_gtp_edge pf=None g=None h=-1   rate=31.9 dt=0.0430988
+    25. type=prot_bond_form pf=None g=7    h=30   rate=20 dt=0.0588481
+    26. type=lat_bond_break pf=0    g=None h=37   rate=7 dt=0.0696344
+    27. type=tub_removal pf=11   g=None h=51   rate=0.2 dt=0.0746804
+    28. type=tub_add    pf=2    g=None h=39   rate=7.8 dt=0.0868053
+    29. type=lat_bond_break pf=2    g=None h=34   rate=7 dt=0.0927947
+    30. type=lat_bond_break pf=11   g=None h=46   rate=7 dt=0.0969294
+    31. type=prot_bond_break pf=None g=8    h=31   rate=14 dt=0.111549
+    32. type=prot_bond_break pf=None g=7    h=36   rate=14 dt=0.113587
+    33. type=prot_bond_form pf=None g=4    h=35   rate=20 dt=0.15349
+    34. type=prot_bond_break pf=None g=7    h=30   rate=7 dt=0.160108
+    35. type=lat_bond_break pf=7    g=None h=38   rate=7 dt=0.192646
+    36. type=tub_removal pf=0    g=None h=38   rate=0.2 dt=0.203105
+    37. type=tub_add    pf=8    g=None h=56   rate=7.8 dt=0.211175
+    38. type=tub_add    pf=5    g=None h=40   rate=7.8 dt=0.211476
+    39. type=lat_bond_break pf=9    g=None h=48   rate=7 dt=0.239123
+    40. type=prot_bond_break pf=None g=8    h=30   rate=7 dt=0.270744
+    41. type=tub_add    pf=10   g=None h=60   rate=7.8 dt=0.328601
+    42. type=tub_add    pf=11   g=None h=52   rate=7.8 dt=0.368753
+    43. type=tub_add    pf=0    g=None h=39   rate=7.8 dt=0.385133
+    44. type=tub_add    pf=9    g=None h=51   rate=7.8 dt=0.396083
+    45. type=lat_bond_break pf=3    g=None h=34   rate=7 dt=0.419935
+    46. type=lat_bond_break pf=6    g=None h=38   rate=7 dt=0.449836
+    47. type=prot_remove_gtp_lattice pf=None g=None h=-1   rate=2.61 dt=0.850731
+    48. type=prot_bind_lattice pf=None g=None h=0    rate=0.7452 dt=1.0306
+    49. type=tub_removal pf=10   g=None h=59   rate=0.2 dt=1.23369
+    50. type=tub_removal pf=12   g=None h=47   rate=0.2 dt=4.19816
+    51. type=tub_removal pf=7    g=None h=39   rate=0.2 dt=4.54529
+    52. type=tub_removal pf=1    g=None h=47   rate=0.2 dt=4.94406
+    53. type=tub_removal pf=6    g=None h=48   rate=0.2 dt=5.34786
+    54. type=tub_removal pf=4    g=None h=55   rate=0.2 dt=6.62983
+    55. type=tub_removal pf=8    g=None h=55   rate=0.2 dt=7.61661
+  Selected event: type=lat_bond_form pf=11 g=None h=47 rate=100 dt=0.00111089
+  After execution:
+    t=4.6421s
+    pf_len       = [39, 48, 39, 35, 56, 40, 49, 40, 56, 51, 60, 52, 48]
+    highest_lat  = [37, 38, 34, 34, 36, 39, 38, 38, 50, 48, 50, 47, 36]
+    mean_len=47.2  max=60  min=35
+  After execution:
+    t=4.8452s
+    pf_len       = [41, 46, 39, 38, 57, 43, 50, 41, 57, 52, 64, 58, 51]
+    highest_lat  = [39, 37, 37, 37, 40, 41, 40, 40, 46, 51, 57, 50, 37]
+    mean_len=49.0  max=64  min=38
+  After execution:
+    t=5.0276s
+    pf_len       = [44, 46, 39, 39, 61, 45, 50, 45, 59, 53, 68, 60, 51]
+    highest_lat  = [43, 38, 38, 38, 37, 44, 43, 43, 52, 51, 59, 50, 41]
+    mean_len=50.8  max=68  min=39
+  After execution:
+    t=5.2284s
+    pf_len       = [46, 48, 45, 41, 63, 46, 50, 45, 59, 54, 70, 61, 51]
+    highest_lat  = [44, 44, 38, 40, 45, 45, 44, 44, 52, 52, 58, 50, 43]
+    mean_len=52.2  max=70  min=41
+
+=== STEP 4000 ===
+  Candidate events:
+     1. type=prot_bond_form pf=None g=4    h=48   rate=20 dt=0.000492523
+     2. type=lat_bond_form pf=7    g=None h=45   rate=100 dt=0.000942598
+     3. type=lat_bond_break pf=4    g=None h=45   rate=70 dt=0.00274456
+     4. type=lat_bond_form pf=4    g=None h=46   rate=100 dt=0.0043376
+     5. type=lat_bond_break pf=10   g=None h=59   rate=70 dt=0.00500141
+     6. type=prot_bond_break pf=None g=7    h=30   rate=14 dt=0.00682885
+     7. type=lat_bond_form pf=6    g=None h=45   rate=100 dt=0.00966731
+     8. type=lat_bond_break pf=8    g=None h=54   rate=70 dt=0.00971162
+     9. type=prot_remove_gtp_edge pf=None g=None h=-1   rate=11.6 dt=0.0152416
+    10. type=tub_add    pf=11   g=None h=62   rate=7.8 dt=0.016441
+    11. type=prot_bind_edge pf=None g=None h=0    rate=28.16 dt=0.01701
+    12. type=prot_bond_form pf=None g=8    h=31   rate=20 dt=0.0177256
+    13. type=lat_bond_form pf=10   g=None h=60   rate=100 dt=0.0243114
+    14. type=lat_bond_break pf=1    g=None h=46   rate=70 dt=0.0258085
+    15. type=lat_bond_break pf=5    g=None h=50   rate=70 dt=0.0260138
+    16. type=prot_bond_form pf=None g=8    h=30   rate=20 dt=0.0342663
+    17. type=tub_add    pf=2    g=None h=47   rate=7.8 dt=0.03618
+    18. type=tub_add    pf=10   g=None h=69   rate=7.8 dt=0.0367797
+    19. type=tub_add    pf=5    g=None h=51   rate=7.8 dt=0.0617477
+    20. type=tub_add    pf=12   g=None h=52   rate=7.8 dt=0.0620164
+    21. type=prot_bond_break pf=None g=5    h=44   rate=14 dt=0.0643545
+    22. type=prot_bond_form pf=None g=9    h=30   rate=20 dt=0.0679486
+    23. type=lat_bond_break pf=7    g=None h=44   rate=7 dt=0.0709519
+    24. type=tub_add    pf=4    g=None h=64   rate=7.8 dt=0.0802884
+    25. type=tub_add    pf=3    g=None h=41   rate=7.8 dt=0.0943352
+    26. type=tub_add    pf=0    g=None h=46   rate=7.8 dt=0.0979785
+    27. type=lat_bond_break pf=3    g=None h=40   rate=7 dt=0.100161
+    28. type=lat_bond_break pf=6    g=None h=44   rate=9 dt=0.105224
+    29. type=tub_add    pf=6    g=None h=53   rate=7.8 dt=0.108264
+    30. type=prot_bond_break pf=None g=7    h=30   rate=14 dt=0.10877
+    31. type=prot_bond_break pf=None g=1    h=34   rate=14 dt=0.119115
+    32. type=tub_add    pf=8    g=None h=60   rate=7.8 dt=0.140718
+    33. type=prot_bind_lattice pf=None g=None h=0    rate=0.7958 dt=0.145342
+    34. type=lat_bond_break pf=2    g=None h=40   rate=7 dt=0.147841
+    35. type=lat_bond_break pf=0    g=None h=45   rate=7 dt=0.167507
+    36. type=tub_add    pf=1    g=None h=48   rate=7.8 dt=0.185991
+    37. type=tub_add    pf=9    g=None h=55   rate=7.8 dt=0.198455
+    38. type=lat_bond_break pf=12   g=None h=43   rate=14 dt=0.202781
+    39. type=lat_bond_break pf=11   g=None h=51   rate=7 dt=0.274654
+    40. type=prot_bond_break pf=None g=7    h=36   rate=14 dt=0.283348
+    41. type=tub_removal pf=1    g=None h=47   rate=0.2 dt=0.4263
+    42. type=prot_remove_gtp_lattice pf=None g=None h=-1   rate=3.19 dt=0.499274
+    43. type=tub_add    pf=7    g=None h=46   rate=7.8 dt=0.537011
+    44. type=lat_bond_break pf=9    g=None h=54   rate=7 dt=0.538652
+    45. type=prot_remove_gdp_lattice pf=None g=None h=-1   rate=1.7 dt=0.60446
+    46. type=tub_removal pf=8    g=None h=59   rate=0.2 dt=4.4879
+    47. type=tub_removal pf=7    g=None h=45   rate=0.2 dt=5.25915
+    48. type=tub_removal pf=6    g=None h=52   rate=0.2 dt=8.77747
+    49. type=tub_removal pf=11   g=None h=61   rate=0.2 dt=8.91908
+    50. type=tub_removal pf=10   g=None h=68   rate=0.2 dt=10.352
+    51. type=tub_removal pf=4    g=None h=63   rate=0.2 dt=29.9184
+  Selected event: type=prot_bond_form pf=None g=4 h=48 rate=20 dt=0.000492523
+  After execution:
+    t=5.4119s
+    pf_len       = [46, 48, 47, 41, 64, 51, 53, 46, 60, 55, 69, 62, 52]
+    highest_lat  = [45, 46, 40, 40, 45, 50, 44, 44, 54, 54, 59, 51, 43]
+    mean_len=53.4  max=69  min=41
+  After execution:
+    t=5.6093s
+    pf_len       = [47, 50, 49, 43, 66, 51, 53, 47, 61, 57, 69, 62, 52]
+    highest_lat  = [45, 48, 42, 41, 45, 49, 46, 46, 54, 54, 57, 51, 44]
+    mean_len=54.4  max=69  min=43
+  After execution:
+    t=5.8121s
+    pf_len       = [48, 53, 51, 47, 69, 51, 54, 48, 63, 58, 69, 67, 53]
+    highest_lat  = [47, 50, 46, 46, 49, 50, 47, 47, 57, 57, 60, 52, 43]
+    mean_len=56.2  max=69  min=47
+  After execution:
+    t=6.0020s
+    pf_len       = [51, 55, 53, 47, 70, 55, 55, 48, 65, 60, 69, 69, 54]
+    highest_lat  = [50, 51, 46, 46, 54, 54, 46, 47, 59, 58, 67, 53, 48]
+    mean_len=57.8  max=70  min=47
+
+=== STEP 5000 ===
+  Candidate events:
+     1. type=lat_bond_break pf=10   g=None h=69   rate=70 dt=6.32526e-05
+     2. type=lat_bond_break pf=5    g=None h=54   rate=70 dt=0.00024509
+     3. type=lat_bond_form pf=4    g=None h=54   rate=100 dt=0.000638241
+     4. type=prot_bond_break pf=None g=8    h=30   rate=7 dt=0.00140868
+     5. type=prot_bond_form pf=None g=4    h=55   rate=20 dt=0.00213598
+     6. type=lat_bond_break pf=0    g=None h=52   rate=70 dt=0.0024057
+     7. type=lat_bond_form pf=5    g=None h=55   rate=100 dt=0.00385919
+     8. type=lat_bond_form pf=12   g=None h=50   rate=100 dt=0.00396652
+     9. type=lat_bond_form pf=1    g=None h=53   rate=100 dt=0.00584697
+    10. type=lat_bond_break pf=7    g=None h=47   rate=7 dt=0.0076121
+    11. type=prot_bond_break pf=None g=8    h=31   rate=7 dt=0.00819308
+    12. type=prot_remove_gtp_edge pf=None g=None h=-1   rate=17.4 dt=0.009722
+    13. type=prot_bond_break pf=None g=4    h=55   rate=14 dt=0.0108976
+    14. type=tub_add    pf=11   g=None h=70   rate=7.8 dt=0.0114119
+    15. type=tub_add    pf=10   g=None h=70   rate=7.8 dt=0.0123044
+    16. type=lat_bond_form pf=11   g=None h=57   rate=100 dt=0.0139096
+    17. type=prot_bond_break pf=None g=9    h=30   rate=7 dt=0.015057
+    18. type=lat_bond_break pf=4    g=None h=53   rate=70 dt=0.0181746
+    19. type=lat_bond_break pf=12   g=None h=49   rate=14 dt=0.0191061
+    20. type=prot_bond_form pf=None g=8    h=62   rate=20 dt=0.0214177
+    21. type=lat_bond_form pf=9    g=None h=62   rate=100 dt=0.023338
+    22. type=prot_bind_edge pf=None g=None h=0    rate=26.88 dt=0.0239024
+    23. type=lat_bond_break pf=8    g=None h=62   rate=70 dt=0.0250717
+    24. type=prot_bond_form pf=None g=1    h=34   rate=20 dt=0.0291472
+    25. type=tub_add    pf=0    g=None h=53   rate=7.8 dt=0.0353935
+    26. type=prot_bond_form pf=None g=7    h=36   rate=20 dt=0.0397636
+    27. type=tub_add    pf=4    g=None h=71   rate=7.8 dt=0.0561834
+    28. type=tub_add    pf=8    g=None h=70   rate=7.8 dt=0.0594165
+    29. type=tub_add    pf=2    g=None h=55   rate=7.8 dt=0.0597498
+    30. type=lat_bond_break pf=6    g=None h=47   rate=7 dt=0.0682198
+    31. type=prot_bond_break pf=None g=7    h=30   rate=7 dt=0.0797728
+    32. type=tub_add    pf=7    g=None h=48   rate=7.8 dt=0.0994749
+    33. type=prot_bond_form pf=None g=7    h=30   rate=20 dt=0.116196
+    34. type=prot_bond_form pf=None g=5    h=44   rate=20 dt=0.117648
+    35. type=tub_add    pf=5    g=None h=58   rate=7.8 dt=0.118405
+    36. type=lat_bond_break pf=9    g=None h=61   rate=7 dt=0.127963
+    37. type=prot_bond_break pf=None g=4    h=48   rate=14 dt=0.179399
+    38. type=tub_add    pf=1    g=None h=55   rate=7.8 dt=0.181269
+    39. type=tub_add    pf=12   g=None h=59   rate=7.8 dt=0.182936
+    40. type=lat_bond_break pf=3    g=None h=47   rate=7 dt=0.185951
+    41. type=prot_bind_lattice pf=None g=None h=0    rate=0.7636 dt=0.194556
+    42. type=tub_add    pf=6    g=None h=56   rate=7.8 dt=0.196212
+    43. type=tub_add    pf=3    g=None h=48   rate=7.8 dt=0.199871
+    44. type=lat_bond_break pf=2    g=None h=47   rate=7 dt=0.218401
+    45. type=lat_bond_break pf=1    g=None h=52   rate=7 dt=0.222863
+    46. type=prot_remove_gtp_lattice pf=None g=None h=-1   rate=6.67 dt=0.233718
+    47. type=lat_bond_break pf=11   g=None h=56   rate=7 dt=0.236264
+    48. type=tub_add    pf=9    g=None h=63   rate=7.8 dt=0.29453
+    49. type=tub_removal pf=8    g=None h=69   rate=0.2 dt=0.637424
+    50. type=tub_removal pf=12   g=None h=58   rate=0.2 dt=1.18482
+    51. type=tub_removal pf=1    g=None h=54   rate=0.2 dt=3.10017
+    52. type=tub_removal pf=5    g=None h=57   rate=0.2 dt=3.55283
+    53. type=tub_removal pf=6    g=None h=55   rate=0.2 dt=3.61052
+    54. type=tub_removal pf=4    g=None h=70   rate=0.2 dt=5.35341
+    55. type=tub_removal pf=2    g=None h=54   rate=0.2 dt=6.21787
+  Selected event: type=lat_bond_break pf=10 g=None h=69 rate=70 dt=6.32526e-05
+  After execution:
+    t=6.1915s
+    pf_len       = [53, 55, 55, 48, 71, 58, 56, 48, 70, 63, 70, 70, 59]
+    highest_lat  = [52, 52, 47, 47, 53, 54, 47, 47, 62, 61, 68, 56, 49]
+    mean_len=59.7  max=71  min=48
+  After execution:
+    t=6.3822s
+    pf_len       = [53, 58, 59, 51, 73, 59, 58, 48, 71, 65, 69, 70, 61]
+    highest_lat  = [52, 56, 50, 50, 58, 56, 47, 47, 59, 62, 67, 59, 50]
+    mean_len=61.2  max=73  min=48
+  After execution:
+    t=6.5600s
+    pf_len       = [57, 59, 60, 52, 75, 61, 59, 48, 71, 67, 69, 70, 63]
+    highest_lat  = [55, 56, 51, 51, 55, 56, 46, 47, 58, 63, 66, 62, 54]
+    mean_len=62.4  max=75  min=48
+  After execution:
+    t=6.7385s
+    pf_len       = [58, 63, 60, 54, 78, 63, 60, 48, 73, 69, 69, 70, 63]
+    highest_lat  = [57, 58, 52, 52, 59, 59, 47, 47, 60, 65, 66, 62, 55]
+    mean_len=63.7  max=78  min=48
+
+=== STEP 6000 ===
+  Candidate events:
+     1. type=lat_bond_break pf=10   g=None h=68   rate=90 dt=0.00124351
+     2. type=lat_bond_form pf=8    g=None h=68   rate=100 dt=0.0015085
+     3. type=lat_bond_break pf=8    g=None h=67   rate=70 dt=0.00169113
+     4. type=lat_bond_break pf=4    g=None h=61   rate=70 dt=0.00264568
+     5. type=prot_bind_edge pf=None g=None h=0    rate=29.44 dt=0.00336515
+     6. type=lat_bond_break pf=6    g=None h=47   rate=7 dt=0.00385025
+     7. type=lat_bond_form pf=0    g=None h=58   rate=100 dt=0.00527411
+     8. type=lat_bond_form pf=9    g=None h=68   rate=100 dt=0.00605211
+     9. type=lat_bond_form pf=4    g=None h=62   rate=100 dt=0.00837158
+    10. type=tub_add    pf=3    g=None h=55   rate=7.8 dt=0.00904538
+    11. type=prot_bond_break pf=None g=11   h=46   rate=14 dt=0.00967602
+    12. type=prot_bond_break pf=None g=7    h=30   rate=14 dt=0.0126166
+    13. type=lat_bond_break pf=2    g=None h=54   rate=7 dt=0.0154369
+    14. type=lat_bond_break pf=1    g=None h=59   rate=70 dt=0.0156617
+    15. type=prot_remove_gtp_edge pf=None g=None h=-1   rate=17.4 dt=0.0186646
+    16. type=prot_bond_form pf=None g=10   h=46   rate=20 dt=0.0197035
+    17. type=prot_bond_break pf=None g=5    h=44   rate=14 dt=0.0198278
+    18. type=tub_add    pf=4    g=None h=78   rate=7.8 dt=0.0263466
+    19. type=lat_bond_form pf=1    g=None h=60   rate=100 dt=0.0266122
+    20. type=tub_add    pf=10   g=None h=69   rate=7.8 dt=0.0324652
+    21. type=tub_add    pf=8    g=None h=74   rate=7.8 dt=0.0354114
+    22. type=prot_bond_break pf=None g=4    h=48   rate=14 dt=0.0354535
+    23. type=tub_add    pf=1    g=None h=65   rate=7.8 dt=0.0402538
+    24. type=lat_bond_break pf=5    g=None h=62   rate=70 dt=0.0427796
+    25. type=prot_bond_break pf=None g=3    h=66   rate=14 dt=0.0485799
+    26. type=prot_bond_break pf=None g=8    h=62   rate=14 dt=0.0506307
+    27. type=prot_bond_form pf=None g=7    h=49   rate=20 dt=0.0508345
+    28. type=prot_bond_form pf=None g=7    h=36   rate=20 dt=0.0625685
+    29. type=prot_remove_gdp_lattice pf=None g=None h=-1   rate=1.7 dt=0.0663924
+    30. type=prot_bond_break pf=None g=1    h=34   rate=14 dt=0.0682732
+    31. type=tub_add    pf=12   g=None h=63   rate=7.8 dt=0.0753999
+    32. type=prot_bond_break pf=None g=7    h=30   rate=14 dt=0.0765817
+    33. type=lat_bond_break pf=7    g=None h=47   rate=7 dt=0.0767676
+    34. type=prot_remove_gtp_lattice pf=None g=None h=-1   rate=5.22 dt=0.0823424
+    35. type=prot_bind_lattice pf=None g=None h=0    rate=0.7176 dt=0.10244
+    36. type=lat_bond_break pf=11   g=None h=62   rate=7 dt=0.11426
+    37. type=lat_bond_break pf=3    g=None h=54   rate=7 dt=0.11436
+    38. type=lat_bond_break pf=9    g=None h=67   rate=7 dt=0.152967
+    39. type=lat_bond_break pf=12   g=None h=56   rate=14 dt=0.157425
+    40. type=tub_add    pf=11   g=None h=72   rate=7.8 dt=0.158936
+    41. type=lat_bond_break pf=0    g=None h=57   rate=7 dt=0.176954
+    42. type=tub_add    pf=9    g=None h=70   rate=7.8 dt=0.231973
+    43. type=tub_add    pf=6    g=None h=63   rate=7.8 dt=0.279613
+    44. type=tub_add    pf=5    g=None h=66   rate=7.8 dt=0.282834
+    45. type=tub_add    pf=2    g=None h=61   rate=7.8 dt=0.30115
+    46. type=tub_add    pf=7    g=None h=48   rate=7.8 dt=0.313712
+    47. type=tub_add    pf=0    g=None h=59   rate=7.8 dt=0.374753
+    48. type=tub_removal pf=0    g=None h=58   rate=0.2 dt=0.631389
+    49. type=tub_removal pf=11   g=None h=71   rate=0.2 dt=1.19977
+    50. type=tub_removal pf=1    g=None h=64   rate=0.2 dt=1.59984
+    51. type=tub_removal pf=4    g=None h=77   rate=0.2 dt=1.86748
+    52. type=tub_removal pf=8    g=None h=73   rate=0.2 dt=6.85848
+    53. type=tub_removal pf=9    g=None h=69   rate=0.2 dt=8.04142
+    54. type=tub_removal pf=2    g=None h=60   rate=0.2 dt=9.0913
+    55. type=tub_removal pf=5    g=None h=65   rate=0.2 dt=17.1868
+  Selected event: type=lat_bond_break pf=10 g=None h=68 rate=90 dt=0.00124351
+  After execution:
+    t=6.9616s
+    pf_len       = [59, 65, 61, 55, 78, 66, 63, 48, 74, 70, 69, 72, 63]
+    highest_lat  = [57, 59, 54, 54, 61, 62, 47, 47, 67, 67, 67, 62, 56]
+    mean_len=64.8  max=78  min=48
+  After execution:
+    t=7.1555s
+    pf_len       = [62, 69, 64, 59, 78, 70, 64, 49, 80, 72, 69, 74, 65]
+    highest_lat  = [61, 61, 58, 56, 65, 63, 48, 48, 70, 68, 68, 64, 59]
+    mean_len=67.3  max=80  min=49
+  After execution:
+    t=7.4180s
+    pf_len       = [64, 70, 65, 59, 81, 72, 66, 53, 84, 74, 72, 75, 69]
+    highest_lat  = [63, 64, 58, 58, 71, 65, 52, 52, 72, 71, 71, 68, 61]
+    mean_len=69.5  max=84  min=53
+  After execution:
+    t=7.6177s
+    pf_len       = [67, 70, 66, 59, 81, 72, 67, 56, 84, 75, 73, 76, 72]
+    highest_lat  = [66, 65, 58, 58, 68, 66, 54, 54, 69, 71, 72, 71, 63]
+    mean_len=70.6  max=84  min=56
+
+=== STEP 7000 ===
+  Candidate events:
+     1. type=lat_bond_break pf=5    g=None h=69   rate=70 dt=0.000453244
+     2. type=lat_bond_form pf=12   g=None h=64   rate=100 dt=0.0016305
+     3. type=lat_bond_break pf=10   g=None h=75   rate=70 dt=0.00312128
+     4. type=tub_add    pf=0    g=None h=70   rate=7.8 dt=0.00420956
+     5. type=lat_bond_form pf=5    g=None h=70   rate=100 dt=0.00591461
+     6. type=lat_bond_form pf=4    g=None h=63   rate=100 dt=0.00698239
+     7. type=lat_bond_break pf=0    g=None h=65   rate=7 dt=0.00977282
+     8. type=lat_bond_form pf=3    g=None h=58   rate=100 dt=0.00980461
+     9. type=lat_bond_break pf=1    g=None h=66   rate=70 dt=0.0111016
+    10. type=lat_bond_form pf=0    g=None h=66   rate=100 dt=0.0132578
+    11. type=prot_bond_form pf=None g=7    h=36   rate=20 dt=0.0138242
+    12. type=lat_bond_break pf=4    g=None h=62   rate=70 dt=0.0166324
+    13. type=lat_bond_break pf=6    g=None h=57   rate=7 dt=0.0216636
+    14. type=lat_bond_break pf=8    g=None h=74   rate=70 dt=0.0244267
+    15. type=lat_bond_break pf=12   g=None h=63   rate=14 dt=0.0347497
+    16. type=tub_add    pf=12   g=None h=76   rate=7.8 dt=0.0377682
+    17. type=prot_bond_form pf=None g=7    h=30   rate=20 dt=0.0385596
+    18. type=tub_add    pf=2    g=None h=67   rate=7.8 dt=0.040402
+    19. type=prot_bond_break pf=None g=6    h=60   rate=14 dt=0.0416222
+    20. type=prot_bond_break pf=None g=11   h=46   rate=7 dt=0.0439895
+    21. type=tub_add    pf=7    g=None h=58   rate=7.8 dt=0.0514869
+    22. type=prot_bind_edge pf=None g=None h=0    rate=27.52 dt=0.0617141
+    23. type=tub_add    pf=6    g=None h=71   rate=7.8 dt=0.0634533
+    24. type=prot_bond_break pf=None g=4    h=48   rate=14 dt=0.0705662
+    25. type=tub_add    pf=5    g=None h=73   rate=7.8 dt=0.0813568
+    26. type=tub_add    pf=9    g=None h=75   rate=7.8 dt=0.0886912
+    27. type=prot_remove_gtp_lattice pf=None g=None h=-1   rate=6.38 dt=0.0972704
+    28. type=prot_bond_break pf=None g=11   h=63   rate=14 dt=0.0990543
+    29. type=tub_add    pf=10   g=None h=76   rate=7.8 dt=0.114475
+    30. type=lat_bond_break pf=3    g=None h=57   rate=9 dt=0.119952
+    31. type=prot_bond_break pf=None g=10   h=46   rate=7 dt=0.12707
+    32. type=tub_add    pf=4    g=None h=84   rate=7.8 dt=0.151841
+    33. type=tub_add    pf=8    g=None h=85   rate=7.8 dt=0.154972
+    34. type=tub_add    pf=3    g=None h=60   rate=7.8 dt=0.165183
+    35. type=tub_removal pf=8    g=None h=84   rate=0.2 dt=0.171958
+    36. type=prot_remove_gtp_edge pf=None g=None h=-1   rate=11.6 dt=0.195328
+    37. type=tub_add    pf=11   g=None h=76   rate=7.8 dt=0.213339
+    38. type=prot_bond_break pf=None g=11   h=63   rate=14 dt=0.24009
+    39. type=prot_remove_gdp_lattice pf=None g=None h=-1   rate=3.4 dt=0.262172
+    40. type=tub_removal pf=0    g=None h=69   rate=0.2 dt=0.264512
+    41. type=lat_bond_break pf=7    g=None h=57   rate=7 dt=0.31278
+    42. type=tub_add    pf=1    g=None h=72   rate=7.8 dt=0.323899
+    43. type=prot_bond_break pf=None g=6    h=60   rate=14 dt=0.348597
+    44. type=lat_bond_break pf=9    g=None h=74   rate=7 dt=0.380217
+    45. type=lat_bond_break pf=11   g=None h=75   rate=7 dt=0.391327
+    46. type=lat_bond_break pf=2    g=None h=59   rate=7 dt=0.463473
+    47. type=tub_removal pf=4    g=None h=83   rate=0.2 dt=0.991056
+    48. type=prot_bind_lattice pf=None g=None h=0    rate=0.759 dt=1.14691
+    49. type=tub_removal pf=1    g=None h=71   rate=0.2 dt=1.34713
+    50. type=tub_removal pf=6    g=None h=70   rate=0.2 dt=3.52408
+    51. type=tub_removal pf=5    g=None h=72   rate=0.2 dt=7.54345
+  Selected event: type=lat_bond_break pf=5 g=None h=69 rate=70 dt=0.000453244
+  After execution:
+    t=7.8426s
+    pf_len       = [70, 72, 67, 60, 84, 73, 71, 58, 85, 75, 76, 76, 76]
+    highest_lat  = [65, 66, 59, 57, 62, 68, 57, 57, 74, 74, 75, 75, 63]
+    mean_len=72.5  max=85  min=58
+  After execution:
+    t=8.0293s
+    pf_len       = [73, 74, 68, 62, 85, 75, 74, 58, 86, 76, 79, 76, 77]
+    highest_lat  = [70, 67, 60, 60, 71, 72, 56, 56, 74, 74, 75, 75, 70]
+    mean_len=74.1  max=86  min=58
+  After execution:
+    t=8.2209s
+    pf_len       = [73, 75, 71, 62, 86, 78, 75, 59, 87, 75, 81, 78, 78]
+    highest_lat  = [72, 70, 61, 61, 69, 71, 58, 55, 73, 73, 77, 73, 70]
+    mean_len=75.2  max=87  min=59
+  After execution:
+    t=8.4234s
+    pf_len       = [75, 76, 71, 63, 89, 80, 76, 59, 88, 75, 81, 78, 80]
+    highest_lat  = [74, 70, 62, 61, 72, 75, 58, 58, 73, 73, 77, 77, 72]
+    mean_len=76.2  max=89  min=59
+
+=== STEP 8000 ===
+  Candidate events:
+     1. type=prot_remove_gtp_edge pf=None g=None h=-1   rate=23.2 dt=0.00270593
+     2. type=tub_add    pf=7    g=None h=60   rate=7.8 dt=0.00291532
+     3. type=lat_bond_form pf=4    g=None h=82   rate=100 dt=0.00301102
+     4. type=lat_bond_break pf=10   g=None h=75   rate=70 dt=0.0060748
+     5. type=lat_bond_break pf=4    g=None h=81   rate=70 dt=0.00841949
+     6. type=prot_bind_edge pf=None g=None h=0    rate=32 dt=0.00856954
+     7. type=lat_bond_form pf=10   g=None h=76   rate=100 dt=0.00926977
+     8. type=lat_bond_break pf=11   g=None h=78   rate=70 dt=0.00947286
+     9. type=tub_add    pf=6    g=None h=79   rate=7.8 dt=0.0101792
+    10. type=prot_remove_gtp_lattice pf=None g=None h=-1   rate=6.09 dt=0.01066
+    11. type=prot_bond_form pf=None g=6    h=60   rate=20 dt=0.0107761
+    12. type=lat_bond_break pf=8    g=None h=74   rate=90 dt=0.0107975
+    13. type=lat_bond_form pf=3    g=None h=65   rate=100 dt=0.0131056
+    14. type=prot_bond_break pf=None g=7    h=30   rate=14 dt=0.0131687
+    15. type=prot_bond_break pf=None g=11   h=46   rate=14 dt=0.0214995
+    16. type=tub_add    pf=4    g=None h=89   rate=7.8 dt=0.0215427
+    17. type=prot_bond_break pf=None g=8    h=75   rate=14 dt=0.021563
+    18. type=lat_bond_break pf=2    g=None h=66   rate=7 dt=0.0243186
+    19. type=lat_bond_break pf=1    g=None h=74   rate=7 dt=0.0326859
+    20. type=tub_add    pf=9    g=None h=75   rate=7.8 dt=0.0338296
+    21. type=lat_bond_break pf=0    g=None h=75   rate=9 dt=0.0363911
+    22. type=prot_bond_form pf=None g=2    h=66   rate=20 dt=0.0457071
+    23. type=lat_bond_break pf=6    g=None h=59   rate=7 dt=0.0475082
+    24. type=prot_bond_form pf=None g=10   h=46   rate=20 dt=0.0637334
+    25. type=prot_bond_form pf=None g=11   h=63   rate=20 dt=0.0687571
+    26. type=lat_bond_break pf=3    g=None h=64   rate=7 dt=0.0790108
+    27. type=prot_bond_break pf=None g=4    h=48   rate=14 dt=0.0904154
+    28. type=tub_add    pf=11   g=None h=79   rate=7.8 dt=0.103979
+    29. type=prot_bond_break pf=None g=11   h=63   rate=14 dt=0.114506
+    30. type=tub_add    pf=0    g=None h=79   rate=7.8 dt=0.117161
+    31. type=lat_bond_break pf=7    g=None h=59   rate=7 dt=0.141297
+    32. type=tub_add    pf=2    g=None h=75   rate=7.8 dt=0.141575
+    33. type=tub_add    pf=10   g=None h=84   rate=7.8 dt=0.149035
+    34. type=tub_add    pf=8    g=None h=89   rate=7.8 dt=0.169482
+    35. type=tub_removal pf=5    g=None h=83   rate=0.2 dt=0.171133
+    36. type=prot_bond_break pf=None g=2    h=65   rate=7 dt=0.178712
+    37. type=lat_bond_break pf=12   g=None h=76   rate=14 dt=0.181133
+    38. type=prot_remove_gdp_lattice pf=None g=None h=-1   rate=3.4 dt=0.245676
+    39. type=tub_add    pf=1    g=None h=76   rate=7.8 dt=0.248322
+    40. type=tub_add    pf=12   g=None h=82   rate=7.8 dt=0.256385
+    41. type=lat_bond_break pf=9    g=None h=74   rate=9 dt=0.261248
+    42. type=prot_bond_break pf=None g=3    h=66   rate=7 dt=0.263489
+    43. type=tub_add    pf=5    g=None h=84   rate=7.8 dt=0.271009
+    44. type=lat_bond_break pf=5    g=None h=78   rate=7 dt=0.296177
+    45. type=tub_add    pf=3    g=None h=67   rate=7.8 dt=0.370992
+    46. type=prot_bind_lattice pf=None g=None h=0    rate=0.6624 dt=0.493767
+    47. type=tub_removal pf=0    g=None h=78   rate=0.2 dt=2.35204
+    48. type=tub_removal pf=4    g=None h=88   rate=0.2 dt=2.56703
+    49. type=tub_removal pf=10   g=None h=83   rate=0.2 dt=3.17601
+    50. type=tub_removal pf=12   g=None h=81   rate=0.2 dt=3.73078
+    51. type=tub_removal pf=8    g=None h=88   rate=0.2 dt=7.74414
+  Selected event: type=prot_remove_gtp_edge pf=None g=None h=-1 rate=23.2 dt=0.00270593
+  After execution:
+    t=8.6404s
+    pf_len       = [79, 76, 75, 67, 89, 84, 79, 60, 89, 75, 84, 79, 82]
+    highest_lat  = [75, 74, 66, 64, 81, 78, 59, 59, 74, 74, 75, 78, 76]
+    mean_len=78.3  max=89  min=60
+  After execution:
+    t=8.8833s
+    pf_len       = [81, 76, 76, 67, 91, 89, 80, 64, 89, 76, 84, 80, 86]
+    highest_lat  = [75, 75, 66, 66, 85, 79, 62, 62, 73, 75, 79, 79, 78]
+    mean_len=79.9  max=91  min=64
+  After execution:
+    t=9.0922s
+    pf_len       = [81, 76, 79, 67, 93, 89, 82, 66, 91, 75, 85, 80, 87]
+    highest_lat  = [74, 75, 66, 66, 85, 78, 64, 65, 71, 73, 79, 78, 78]
+    mean_len=80.8  max=93  min=66
+  After execution:
+    t=9.3042s
+    pf_len       = [83, 79, 82, 68, 94, 90, 86, 69, 92, 75, 85, 82, 88]
+    highest_lat  = [78, 78, 67, 67, 87, 85, 68, 68, 71, 72, 79, 81, 80]
+    mean_len=82.5  max=94  min=68
+
+=== STEP 9000 ===
+  Candidate events:
+     1. type=prot_bind_edge pf=None g=None h=0    rate=38.72 dt=0.000389296
+     2. type=lat_bond_form pf=10   g=None h=81   rate=100 dt=0.000860004
+     3. type=lat_bond_break pf=3    g=None h=68   rate=7 dt=0.00139818
+     4. type=lat_bond_form pf=12   g=None h=82   rate=100 dt=0.00298074
+     5. type=lat_bond_break pf=4    g=None h=88   rate=70 dt=0.00551116
+     6. type=prot_bond_break pf=None g=11   h=63   rate=14 dt=0.00689258
+     7. type=lat_bond_break pf=10   g=None h=80   rate=70 dt=0.00935269
+     8. type=tub_add    pf=8    g=None h=94   rate=7.8 dt=0.0111553
+     9. type=prot_bond_form pf=None g=7    h=68   rate=20 dt=0.0116259
+    10. type=lat_bond_break pf=11   g=None h=81   rate=70 dt=0.0116665
+    11. type=lat_bond_break pf=9    g=None h=74   rate=90 dt=0.0119059
+    12. type=lat_bond_form pf=1    g=None h=81   rate=100 dt=0.01387
+    13. type=tub_add    pf=11   g=None h=82   rate=7.8 dt=0.0140147
+    14. type=lat_bond_break pf=8    g=None h=70   rate=90 dt=0.014825
+    15. type=lat_bond_break pf=2    g=None h=68   rate=7 dt=0.0201462
+    16. type=prot_bond_break pf=None g=11   h=46   rate=7 dt=0.0231695
+    17. type=prot_bond_form pf=None g=7    h=30   rate=20 dt=0.0241763
+    18. type=lat_bond_form pf=4    g=None h=89   rate=100 dt=0.0260842
+    19. type=lat_bond_form pf=8    g=None h=71   rate=100 dt=0.0268262
+    20. type=tub_add    pf=10   g=None h=89   rate=7.8 dt=0.0363639
+    21. type=tub_add    pf=3    g=None h=69   rate=7.8 dt=0.0437008
+    22. type=prot_bond_break pf=None g=3    h=70   rate=7 dt=0.0519295
+    23. type=tub_add    pf=6    g=None h=86   rate=7.8 dt=0.0527806
+    24. type=lat_bond_break pf=7    g=None h=69   rate=7 dt=0.054375
+    25. type=prot_remove_gdp_edge pf=None g=None h=-1   rate=25 dt=0.0609767
+    26. type=lat_bond_break pf=5    g=None h=85   rate=7 dt=0.0628635
+    27. type=prot_bond_break pf=None g=8    h=85   rate=14 dt=0.0655568
+    28. type=prot_bond_form pf=None g=11   h=63   rate=20 dt=0.066602
+    29. type=prot_bond_break pf=None g=6    h=60   rate=14 dt=0.0674384
+    30. type=tub_removal pf=2    g=None h=82   rate=0.2 dt=0.0814315
+    31. type=tub_add    pf=12   g=None h=90   rate=7.8 dt=0.0846929
+    32. type=tub_add    pf=7    g=None h=70   rate=7.8 dt=0.101241
+    33. type=tub_add    pf=5    g=None h=91   rate=7.8 dt=0.103224
+    34. type=prot_remove_gtp_lattice pf=None g=None h=-1   rate=5.8 dt=0.112741
+    35. type=lat_bond_break pf=12   g=None h=81   rate=14 dt=0.114278
+    36. type=tub_add    pf=1    g=None h=83   rate=7.8 dt=0.123725
+    37. type=prot_remove_gtp_edge pf=None g=None h=-1   rate=14.5 dt=0.125563
+    38. type=prot_bond_break pf=None g=4    h=89   rate=14 dt=0.143268
+    39. type=tub_add    pf=4    g=None h=97   rate=7.8 dt=0.149807
+    40. type=lat_bond_break pf=1    g=None h=80   rate=7 dt=0.178508
+    41. type=tub_add    pf=9    g=None h=75   rate=7.8 dt=0.208055
+    42. type=prot_bond_break pf=None g=4    h=70   rate=7 dt=0.239936
+    43. type=tub_add    pf=0    g=None h=85   rate=7.8 dt=0.268111
+    44. type=lat_bond_break pf=6    g=None h=69   rate=7 dt=0.287106
+    45. type=tub_add    pf=2    g=None h=83   rate=7.8 dt=0.295318
+    46. type=lat_bond_break pf=0    g=None h=82   rate=7 dt=0.341971
+    47. type=prot_bond_break pf=None g=10   h=46   rate=7 dt=0.40341
+    48. type=prot_remove_gdp_lattice pf=None g=None h=-1   rate=1.7 dt=0.867707
+    49. type=tub_removal pf=10   g=None h=88   rate=0.2 dt=1.52687
+    50. type=prot_bind_lattice pf=None g=None h=0    rate=0.5842 dt=1.61935
+    51. type=tub_removal pf=5    g=None h=90   rate=0.2 dt=3.45584
+    52. type=tub_removal pf=8    g=None h=93   rate=0.2 dt=4.97765
+    53. type=tub_removal pf=4    g=None h=96   rate=0.2 dt=5.11716
+    54. type=tub_removal pf=12   g=None h=89   rate=0.2 dt=6.79324
+    55. type=tub_removal pf=0    g=None h=84   rate=0.2 dt=6.96718
+  Selected event: type=prot_bind_edge pf=None g=None h=0 rate=38.72 dt=0.000389296
+  After execution:
+    t=9.5002s
+    pf_len       = [85, 83, 83, 69, 97, 91, 86, 70, 94, 75, 89, 82, 90]
+    highest_lat  = [82, 80, 68, 68, 88, 85, 69, 69, 70, 74, 80, 81, 81]
+    mean_len=84.2  max=97  min=69
+  After execution:
+    t=9.6957s
+    pf_len       = [88, 83, 83, 70, 98, 93, 86, 72, 95, 75, 89, 83, 91]
+    highest_lat  = [82, 82, 68, 69, 86, 84, 70, 70, 74, 74, 77, 78, 82]
+    mean_len=85.1  max=98  min=70
+  After execution:
+    t=9.8593s
+    pf_len       = [90, 83, 87, 72, 99, 93, 87, 74, 95, 78, 89, 84, 93]
+    highest_lat  = [81, 82, 71, 71, 91, 86, 73, 72, 76, 77, 81, 82, 82]
+    mean_len=86.5  max=99  min=72
+  After execution:
+    t=10.0516s
+    pf_len       = [91, 85, 89, 73, 99, 94, 87, 74, 97, 79, 91, 86, 93]
+    highest_lat  = [84, 83, 72, 72, 87, 86, 73, 73, 78, 77, 81, 85, 88]
+    mean_len=87.5  max=99  min=73
+
+=== STEP 10000 ===
+  Candidate events:
+     1. type=lat_bond_break pf=12   g=None h=88   rate=140 dt=0.00184284
+     2. type=lat_bond_break pf=9    g=None h=79   rate=70 dt=0.00379589
+     3. type=lat_bond_form pf=8    g=None h=76   rate=100 dt=0.00383039
+     4. type=lat_bond_break pf=8    g=None h=75   rate=70 dt=0.00511681
+     5. type=tub_add    pf=0    g=None h=91   rate=7.8 dt=0.00581762
+     6. type=lat_bond_break pf=1    g=None h=86   rate=70 dt=0.00584719
+     7. type=lat_bond_form pf=4    g=None h=92   rate=100 dt=0.00696618
+     8. type=lat_bond_form pf=0    g=None h=86   rate=100 dt=0.00800569
+     9. type=lat_bond_break pf=4    g=None h=91   rate=70 dt=0.0105768
+    10. type=prot_bind_edge pf=None g=None h=0    rate=38.08 dt=0.0106399
+    11. type=prot_bond_form pf=None g=3    h=74   rate=20 dt=0.0110627
+    12. type=lat_bond_form pf=3    g=None h=75   rate=100 dt=0.0117458
+    13. type=tub_add    pf=12   g=None h=95   rate=7.8 dt=0.0119665
+    14. type=prot_bond_break pf=None g=6    h=60   rate=14 dt=0.0126728
+    15. type=lat_bond_break pf=10   g=None h=85   rate=70 dt=0.0133048
+    16. type=lat_bond_form pf=10   g=None h=86   rate=100 dt=0.0147304
+    17. type=prot_remove_gtp_edge pf=None g=None h=-1   rate=14.5 dt=0.0150774
+    18. type=lat_bond_break pf=2    g=None h=74   rate=7 dt=0.020956
+    19. type=prot_bond_form pf=None g=9    h=85   rate=20 dt=0.0247134
+    20. type=prot_bond_form pf=None g=8    h=76   rate=20 dt=0.0251969
+    21. type=prot_bond_break pf=None g=9    h=78   rate=14 dt=0.0258946
+    22. type=prot_bond_break pf=None g=7    h=68   rate=14 dt=0.0269536
+    23. type=lat_bond_break pf=11   g=None h=87   rate=70 dt=0.0314213
+    24. type=tub_add    pf=11   g=None h=88   rate=7.8 dt=0.0318225
+    25. type=lat_bond_form pf=2    g=None h=75   rate=100 dt=0.0322004
+    26. type=prot_bond_break pf=None g=11   h=63   rate=14 dt=0.0333496
+    27. type=prot_bond_form pf=None g=10   h=46   rate=20 dt=0.0334192
+    28. type=tub_add    pf=8    g=None h=99   rate=7.8 dt=0.0340493
+    29. type=prot_bond_form pf=None g=11   h=63   rate=20 dt=0.0447205
+    30. type=prot_bond_break pf=None g=9    h=77   rate=7 dt=0.0506788
+    31. type=prot_bond_break pf=None g=8    h=85   rate=14 dt=0.0517409
+    32. type=tub_add    pf=6    g=None h=87   rate=7.8 dt=0.0570809
+    33. type=prot_bond_break pf=None g=9    h=76   rate=14 dt=0.0610915
+    34. type=tub_add    pf=3    g=None h=76   rate=7.8 dt=0.0635665
+    35. type=tub_add    pf=9    g=None h=80   rate=7.8 dt=0.0657091
+    36. type=tub_add    pf=4    g=None h=102  rate=7.8 dt=0.0812582
+    37. type=prot_bond_form pf=None g=9    h=78   rate=20 dt=0.0878483
+    38. type=lat_bond_break pf=5    g=None h=86   rate=7 dt=0.0884198
+    39. type=lat_bond_break pf=3    g=None h=74   rate=7 dt=0.0899468
+    40. type=lat_bond_break pf=6    g=None h=74   rate=7 dt=0.0942909
+    41. type=prot_remove_gtp_lattice pf=None g=None h=-1   rate=4.93 dt=0.102369
+    42. type=prot_bond_break pf=None g=2    h=84   rate=14 dt=0.104282
+    43. type=prot_bond_break pf=None g=3    h=70   rate=7 dt=0.116822
+    44. type=prot_bond_break pf=None g=4    h=70   rate=7 dt=0.144226
+    45. type=prot_bond_break pf=None g=8    h=76   rate=7 dt=0.151179
+    46. type=lat_bond_break pf=0    g=None h=85   rate=7 dt=0.167189
+    47. type=prot_bond_break pf=None g=9    h=77   rate=7 dt=0.168064
+    48. type=tub_add    pf=10   g=None h=93   rate=7.8 dt=0.197324
+    49. type=lat_bond_break pf=7    g=None h=74   rate=7 dt=0.199859
+    50. type=prot_remove_gdp_lattice pf=None g=None h=-1   rate=1.7 dt=0.200752
+    51. type=tub_add    pf=5    g=None h=94   rate=7.8 dt=0.204233
+    52. type=tub_add    pf=7    g=None h=75   rate=7.8 dt=0.308383
+    53. type=tub_add    pf=1    g=None h=87   rate=7.8 dt=0.367445
+    54. type=tub_add    pf=2    g=None h=89   rate=7.8 dt=0.666426
+    55. type=tub_removal pf=4    g=None h=101  rate=0.2 dt=1.85126
+    56. type=tub_removal pf=0    g=None h=90   rate=0.2 dt=2.02408
+    57. type=prot_bind_lattice pf=None g=None h=0    rate=0.5842 dt=2.3725
+    58. type=tub_removal pf=2    g=None h=88   rate=0.2 dt=4.02393
+    59. type=tub_removal pf=8    g=None h=98   rate=0.2 dt=5.70574
+    60. type=tub_removal pf=3    g=None h=75   rate=0.2 dt=7.49999
+    61. type=tub_removal pf=10   g=None h=92   rate=0.2 dt=7.83633
+    62. type=tub_removal pf=5    g=None h=93   rate=0.2 dt=8.15221
+    63. type=tub_removal pf=12   g=None h=94   rate=0.2 dt=21.765
+  Selected event: type=lat_bond_break pf=12 g=None h=88 rate=140 dt=0.00184284
+  After execution:
+    t=10.2267s
+    pf_len       = [91, 87, 89, 76, 102, 94, 87, 75, 99, 80, 93, 88, 95]
+    highest_lat  = [85, 86, 74, 74, 91, 86, 74, 74, 75, 79, 85, 87, 87]
+    mean_len=88.9  max=102  min=75
+Saved simulation.gif (40 frames)
+
+=== MT_lattice final state ===
+
+  PF 0 (len=91):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       0         1
+    26       1         1
+    27       0         1
+    28       0         1
+    29       1         1
+    30       0         1
+    31       0         1
+    32       0         1
+    33       0         1
+    34       0         1
+    35       1         1
+    36       1         1
+    37       0         1
+    38       0         1
+    39       0         1
+    40       0         1
+    41       1         1
+    42       0         1
+    43       0         1
+    44       0         1
+    45       0         1
+    46       0         1
+    47       0         1
+    48       0         1
+    49       0         1
+    50       1         1
+    51       0         1
+    52       0         1
+    53       0         1
+    54       0         1
+    55       0         1
+    56       0         1
+    57       0         1
+    58       0         1
+    59       0         1
+    60       0         1
+    61       0         1
+    62       0         1
+    63       0         1
+    64       0         1
+    65       0         1
+    66       0         1
+    67       0         1
+    68       0         1
+    69       1         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       0         1
+    74       0         1
+    75       1         1
+    76       0         1
+    77       0         1
+    78       0         1
+    79       0         1
+    80       0         1
+    81       0         1
+    82       0         1
+    83       0         1
+    84       0         1
+    85       0         1
+    86       0         0
+    87       0         0
+    88       0         0
+    89       0         0
+    90       0         0
+
+  PF 1 (len=87):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       0         1
+    26       1         1
+    27       1         1
+    28       0         1
+    29       1         1
+    30       1         1
+    31       0         1
+    32       1         1
+    33       0         1
+    34       1         1
+    35       0         1
+    36       0         1
+    37       1         1
+    38       0         1
+    39       0         1
+    40       0         1
+    41       0         1
+    42       0         1
+    43       0         1
+    44       0         1
+    45       0         1
+    46       0         1
+    47       0         1
+    48       1         1
+    49       0         1
+    50       0         1
+    51       0         1
+    52       0         1
+    53       0         1
+    54       1         1
+    55       0         1
+    56       0         1
+    57       1         1
+    58       0         1
+    59       0         1
+    60       0         1
+    61       0         1
+    62       0         1
+    63       1         1
+    64       1         1
+    65       0         1
+    66       0         1
+    67       0         1
+    68       0         1
+    69       0         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       0         1
+    74       0         1
+    75       1         1
+    76       0         1
+    77       0         1
+    78       0         1
+    79       0         1
+    80       0         1
+    81       0         1
+    82       0         1
+    83       0         1
+    84       0         1
+    85       0         1
+    86       0         1
+
+  PF 2 (len=89):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       0         1
+    26       0         1
+    27       0         1
+    28       0         1
+    29       1         1
+    30       0         1
+    31       0         1
+    32       0         1
+    33       0         1
+    34       0         1
+    35       0         1
+    36       0         1
+    37       0         1
+    38       1         1
+    39       1         1
+    40       0         1
+    41       0         1
+    42       0         1
+    43       1         1
+    44       0         1
+    45       0         1
+    46       0         1
+    47       0         1
+    48       0         1
+    49       1         1
+    50       0         1
+    51       0         1
+    52       0         1
+    53       1         1
+    54       0         1
+    55       0         1
+    56       1         1
+    57       0         1
+    58       0         1
+    59       0         1
+    60       0         1
+    61       0         1
+    62       0         1
+    63       0         1
+    64       0         1
+    65       0         1
+    66       0         1
+    67       0         1
+    68       0         1
+    69       0         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       0         1
+    74       0         1
+    75       0         0
+    76       0         0
+    77       0         0
+    78       0         0
+    79       0         0
+    80       0         0
+    81       0         0
+    82       0         0
+    83       0         0
+    84       0         0
+    85       0         0
+    86       0         0
+    87       0         0
+    88       0         0
+
+  PF 3 (len=76):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       1         1
+    26       0         1
+    27       0         1
+    28       0         1
+    29       1         1
+    30       0         1
+    31       0         1
+    32       0         1
+    33       0         1
+    34       0         1
+    35       0         1
+    36       0         1
+    37       0         1
+    38       1         1
+    39       0         1
+    40       0         1
+    41       0         1
+    42       0         1
+    43       0         1
+    44       0         1
+    45       0         1
+    46       1         1
+    47       0         1
+    48       0         1
+    49       0         1
+    50       0         1
+    51       0         1
+    52       1         1
+    53       0         1
+    54       0         1
+    55       0         1
+    56       1         1
+    57       1         1
+    58       0         1
+    59       1         1
+    60       0         1
+    61       0         1
+    62       0         1
+    63       0         1
+    64       0         1
+    65       0         1
+    66       0         1
+    67       0         1
+    68       0         1
+    69       0         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       0         1
+    74       0         1
+    75       0         0
+
+  PF 4 (len=102):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       0         1
+    26       1         1
+    27       0         1
+    28       0         1
+    29       1         1
+    30       0         1
+    31       0         1
+    32       0         1
+    33       0         1
+    34       0         1
+    35       0         1
+    36       0         1
+    37       0         1
+    38       0         1
+    39       0         1
+    40       0         1
+    41       1         1
+    42       0         1
+    43       1         1
+    44       0         1
+    45       0         1
+    46       0         1
+    47       1         1
+    48       0         1
+    49       0         1
+    50       1         1
+    51       0         1
+    52       1         1
+    53       0         1
+    54       0         1
+    55       0         1
+    56       0         1
+    57       1         1
+    58       1         1
+    59       0         1
+    60       0         1
+    61       0         1
+    62       0         1
+    63       0         1
+    64       0         1
+    65       0         1
+    66       0         1
+    67       0         1
+    68       0         1
+    69       0         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       0         1
+    74       0         1
+    75       0         1
+    76       0         1
+    77       0         1
+    78       0         1
+    79       0         1
+    80       0         1
+    81       0         1
+    82       0         1
+    83       0         1
+    84       0         1
+    85       1         1
+    86       0         1
+    87       0         1
+    88       0         1
+    89       0         1
+    90       0         1
+    91       0         1
+    92       0         0
+    93       0         0
+    94       0         0
+    95       0         0
+    96       0         0
+    97       0         0
+    98       0         0
+    99       0         0
+   100       0         0
+   101       0         0
+
+  PF 5 (len=94):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       0         1
+    26       1         1
+    27       0         1
+    28       0         1
+    29       0         1
+    30       1         1
+    31       0         1
+    32       0         1
+    33       0         1
+    34       1         1
+    35       0         1
+    36       1         1
+    37       0         1
+    38       0         1
+    39       1         1
+    40       0         1
+    41       0         1
+    42       0         1
+    43       0         1
+    44       0         1
+    45       0         1
+    46       1         1
+    47       1         1
+    48       0         1
+    49       1         1
+    50       0         1
+    51       0         1
+    52       0         1
+    53       0         1
+    54       0         1
+    55       0         1
+    56       0         1
+    57       0         1
+    58       0         1
+    59       1         1
+    60       0         1
+    61       1         1
+    62       0         1
+    63       0         1
+    64       1         1
+    65       0         1
+    66       0         1
+    67       0         1
+    68       0         1
+    69       0         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       0         1
+    74       0         1
+    75       0         1
+    76       0         1
+    77       0         1
+    78       0         1
+    79       0         1
+    80       0         1
+    81       0         1
+    82       0         1
+    83       0         1
+    84       0         1
+    85       0         1
+    86       0         1
+    87       0         0
+    88       1         0
+    89       0         0
+    90       0         0
+    91       0         0
+    92       0         0
+    93       0         0
+
+  PF 6 (len=87):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       0         1
+    26       0         1
+    27       0         1
+    28       1         1
+    29       1         1
+    30       1         1
+    31       1         1
+    32       1         1
+    33       1         1
+    34       0         1
+    35       0         1
+    36       0         1
+    37       0         1
+    38       0         1
+    39       0         1
+    40       0         1
+    41       1         1
+    42       0         1
+    43       0         1
+    44       1         1
+    45       1         1
+    46       0         1
+    47       0         1
+    48       0         1
+    49       0         1
+    50       0         1
+    51       0         1
+    52       0         1
+    53       0         1
+    54       1         1
+    55       0         1
+    56       0         1
+    57       0         1
+    58       0         1
+    59       0         1
+    60       0         1
+    61       1         1
+    62       0         1
+    63       0         1
+    64       0         1
+    65       0         1
+    66       0         1
+    67       0         1
+    68       0         1
+    69       0         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       0         1
+    74       0         1
+    75       0         0
+    76       0         0
+    77       0         0
+    78       0         0
+    79       0         0
+    80       1         0
+    81       0         0
+    82       0         0
+    83       0         0
+    84       0         0
+    85       0         0
+    86       0         0
+
+  PF 7 (len=75):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       0         1
+    26       1         1
+    27       1         1
+    28       0         1
+    29       0         1
+    30       1         1
+    31       0         1
+    32       0         1
+    33       0         1
+    34       1         1
+    35       0         1
+    36       0         1
+    37       0         1
+    38       0         1
+    39       0         1
+    40       0         1
+    41       1         1
+    42       0         1
+    43       0         1
+    44       0         1
+    45       0         1
+    46       0         1
+    47       0         1
+    48       0         1
+    49       0         1
+    50       0         1
+    51       0         1
+    52       0         1
+    53       0         1
+    54       0         1
+    55       0         1
+    56       1         1
+    57       0         1
+    58       0         1
+    59       0         1
+    60       0         1
+    61       0         1
+    62       0         1
+    63       0         1
+    64       0         1
+    65       0         1
+    66       0         1
+    67       0         1
+    68       0         1
+    69       0         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       0         1
+    74       0         1
+
+  PF 8 (len=99):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       0         1
+    26       0         1
+    27       0         1
+    28       1         1
+    29       0         1
+    30       1         1
+    31       0         1
+    32       0         1
+    33       1         1
+    34       1         1
+    35       0         1
+    36       1         1
+    37       0         1
+    38       1         1
+    39       1         1
+    40       0         1
+    41       0         1
+    42       0         1
+    43       0         1
+    44       0         1
+    45       0         1
+    46       0         1
+    47       0         1
+    48       1         1
+    49       0         1
+    50       1         1
+    51       0         1
+    52       0         1
+    53       0         1
+    54       0         1
+    55       0         1
+    56       1         1
+    57       0         1
+    58       0         1
+    59       0         1
+    60       0         1
+    61       0         1
+    62       0         1
+    63       0         1
+    64       1         1
+    65       0         1
+    66       0         1
+    67       1         1
+    68       0         1
+    69       0         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       1         1
+    74       0         1
+    75       0         1
+    76       0         0
+    77       0         0
+    78       0         0
+    79       0         0
+    80       0         0
+    81       1         0
+    82       0         0
+    83       0         0
+    84       0         0
+    85       0         0
+    86       1         0
+    87       0         0
+    88       0         0
+    89       0         0
+    90       0         0
+    91       0         0
+    92       0         0
+    93       0         0
+    94       0         0
+    95       0         0
+    96       0         0
+    97       0         0
+    98       0         0
+
+  PF 9 (len=80):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       0         1
+    26       0         1
+    27       0         1
+    28       1         1
+    29       0         1
+    30       0         1
+    31       0         1
+    32       0         1
+    33       0         1
+    34       0         1
+    35       1         1
+    36       0         1
+    37       0         1
+    38       0         1
+    39       1         1
+    40       0         1
+    41       1         1
+    42       0         1
+    43       0         1
+    44       1         1
+    45       0         1
+    46       0         1
+    47       0         1
+    48       0         1
+    49       0         1
+    50       1         1
+    51       1         1
+    52       0         1
+    53       0         1
+    54       0         1
+    55       1         1
+    56       0         1
+    57       1         1
+    58       0         1
+    59       1         1
+    60       0         1
+    61       0         1
+    62       0         1
+    63       0         1
+    64       0         1
+    65       0         1
+    66       0         1
+    67       1         1
+    68       0         1
+    69       0         1
+    70       1         1
+    71       0         1
+    72       0         1
+    73       0         1
+    74       1         1
+    75       0         1
+    76       0         1
+    77       0         1
+    78       0         1
+    79       0         1
+
+  PF 10 (len=93):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       1         1
+    26       0         1
+    27       0         1
+    28       0         1
+    29       0         1
+    30       0         1
+    31       0         1
+    32       1         1
+    33       0         1
+    34       0         1
+    35       0         1
+    36       0         1
+    37       0         1
+    38       0         1
+    39       0         1
+    40       0         1
+    41       0         1
+    42       0         1
+    43       0         1
+    44       1         1
+    45       0         1
+    46       0         1
+    47       0         1
+    48       0         1
+    49       1         1
+    50       1         1
+    51       0         1
+    52       0         1
+    53       0         1
+    54       0         1
+    55       0         1
+    56       1         1
+    57       0         1
+    58       0         1
+    59       0         1
+    60       0         1
+    61       0         1
+    62       0         1
+    63       1         1
+    64       0         1
+    65       0         1
+    66       0         1
+    67       1         1
+    68       1         1
+    69       0         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       1         1
+    74       0         1
+    75       0         1
+    76       1         1
+    77       0         1
+    78       0         1
+    79       0         1
+    80       0         1
+    81       0         1
+    82       0         1
+    83       0         1
+    84       0         1
+    85       0         1
+    86       0         0
+    87       0         0
+    88       0         0
+    89       0         0
+    90       0         0
+    91       0         0
+    92       0         0
+
+  PF 11 (len=88):
+     h   hydro   r_bonds
+     0       1         1
+     1       1         1
+     2       1         1
+     3       1         1
+     4       1         1
+     5       1         1
+     6       1         1
+     7       1         1
+     8       1         1
+     9       1         1
+    10       1         1
+    11       1         1
+    12       1         1
+    13       1         1
+    14       1         1
+    15       1         1
+    16       1         1
+    17       1         1
+    18       1         1
+    19       1         1
+    20       1         1
+    21       1         1
+    22       1         1
+    23       1         1
+    24       1         1
+    25       0         1
+    26       1         1
+    27       0         1
+    28       0         1
+    29       0         1
+    30       0         1
+    31       0         1
+    32       1         1
+    33       0         1
+    34       0         1
+    35       0         1
+    36       0         1
+    37       0         1
+    38       1         1
+    39       0         1
+    40       1         1
+    41       0         1
+    42       0         1
+    43       1         1
+    44       1         1
+    45       0         1
+    46       0         1
+    47       1         1
+    48       0         1
+    49       0         1
+    50       0         1
+    51       0         1
+    52       1         1
+    53       0         1
+    54       1         1
+    55       1         1
+    56       0         1
+    57       0         1
+    58       0         1
+    59       1         1
+    60       0         1
+    61       0         1
+    62       0         1
+    63       0         1
+    64       0         1
+    65       0         1
+    66       0         1
+    67       0         1
+    68       0         1
+    69       1         1
+    70       0         1
+    71       0         1
+    72       0         1
+    73       0         1
+    74       0         1
+    75       0         1
+    76       0         1
+    77       0         1
+    78       0         1
+    79       0         1
+    80       0         1
+    81       0         1
+    82       0         1
+    83       0         1
+    84       0         1
+    85       0         1
+    86       0         1
+    87       0         1
+
+  PF 12 (len=95):
+     h   hydro   r_bonds
+     0       1         2
+     1       1         2
+     2       1         2
+     3       1         2
+     4       1         2
+     5       1         2
+     6       1         2
+     7       1         2
+     8       1         2
+     9       1         2
+    10       1         2
+    11       1         2
+    12       1         2
+    13       1         2
+    14       1         2
+    15       1         2
+    16       1         2
+    17       1         2
+    18       1         2
+    19       1         2
+    20       1         2
+    21       1         2
+    22       1         2
+    23       1         2
+    24       1         2
+    25       0         2
+    26       0         2
+    27       1         2
+    28       0         2
+    29       1         2
+    30       1         2
+    31       0         2
+    32       0         2
+    33       0         2
+    34       0         2
+    35       0         2
+    36       0         2
+    37       0         2
+    38       0         2
+    39       0         2
+    40       0         2
+    41       0         2
+    42       0         2
+    43       0         2
+    44       0         2
+    45       1         2
+    46       0         2
+    47       0         2
+    48       1         2
+    49       0         2
+    50       0         2
+    51       0         2
+    52       0         2
+    53       0         2
+    54       0         2
+    55       0         2
+    56       0         2
+    57       0         2
+    58       1         2
+    59       0         2
+    60       0         2
+    61       0         2
+    62       0         2
+    63       0         2
+    64       0         2
+    65       0         2
+    66       0         2
+    67       0         2
+    68       0         2
+    69       0         2
+    70       0         2
+    71       0         2
+    72       0         2
+    73       1         2
+    74       0         2
+    75       0         2
+    76       0         2
+    77       0         2
+    78       0         2
+    79       0         2
+    80       0         2
+    81       0         2
+    82       0         2
+    83       0         2
+    84       0         2
+    85       0         2
+    86       0         2
+    87       0         2
+    88       0         1
+    89       0         1
+    90       0         0
+    91       0         0
+    92       0         0
+    93       0         0
+    94       0         0
