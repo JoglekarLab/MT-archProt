@@ -3,6 +3,7 @@ import numpy as np
 from params import *
 from helpers import *
 from initialization import *
+import initialization as st
 
 # =============================================================
 # GEOMETRY AND STATE QUERIES
@@ -25,7 +26,7 @@ def tubulin_is_GTP(pf: int, h: int) -> bool:
     """
     if not tubulin_present(pf, h):
         return False
-    return int(MT_lattice[pf, h, 0]) == 0
+    return int(st.MT_lattice[pf, h, 0]) == 0
 
 def tubulin_is_GDP(pf: int, h: int) -> bool:
     """
@@ -33,7 +34,7 @@ def tubulin_is_GDP(pf: int, h: int) -> bool:
     """
     if not tubulin_present(pf, h):
         return False
-    return int(MT_lattice[pf, h, 0]) == 1
+    return int(st.MT_lattice[pf, h, 0]) == 1
 
 def right_bond_count(pf: int, h: int) -> int:
     """
@@ -44,7 +45,7 @@ def right_bond_count(pf: int, h: int) -> int:
     """
     if not tubulin_present(pf, h):
         return 0
-    return int(MT_lattice[pf, h, 1])
+    return int(st.MT_lattice[pf, h, 1])
 
 
 def has_right_bond(pf: int, h: int) -> bool:
@@ -93,14 +94,14 @@ def get_pocket_site_type(g: int, h: int) -> int:
     """
     Current stored site type at groove g, height h.
     """
-    return int(prot_sites[g, h, 0])
+    return int(st.prot_sites[g, h, 0])
 
 
 def get_pocket_is_bound(g: int, h: int) -> bool:
     """
     True if an EB1 molecule is currently bound at groove g, height h.
     """
-    return int(prot_sites[g, h, 2]) == 1
+    return int(st.prot_sites[g, h, 2]) == 1
 
 
 def get_pocket_is_bindable(g: int, h: int) -> bool:
@@ -217,7 +218,7 @@ def get_right_bond_break_rate(pf: int, h: int) -> float:
     if stabilized:
         break_rate /= lateral_stabilization_factor
 
-    return break_rate * lateral_breaking_fold_factor
+    return break_rate * st.lateral_breaking_fold_factor
 
 # =============================================================
 # 
@@ -316,17 +317,17 @@ def update_tether_on_bind(g, h):
 
 def bind_protein(g: int, h: int) -> None:
     """Mark a pocket as occupied and record the binding event."""
-    prot_sites[g, h, 2] = 1
+    st.prot_sites[g, h, 2] = 1
     evt_idx = len(prot_events)
     bound_prots[(g, h)] = evt_idx
-    site = int(prot_sites[g, h, 0])
-    nuc  = int(prot_sites[g, h, 1])
+    site = int(st.prot_sites[g, h, 0])
+    nuc  = int(st.prot_sites[g, h, 1])
     prot_events.append({
         'g_idx':         g,
         'h':             h,
         'site_type_on':  site,
         'nuc_state_on':  nuc,
-        't_on':          time_elapsed,
+        't_on':          st.time_elapsed,
         't_off':         None,
         'removal':       None,
         'site_type_now': site,
@@ -341,13 +342,13 @@ def unbind_protein(g: int, h: int, removal_reason: str) -> None:
     Mark a pocket as vacant and finalize the event record."""
     for (g2, h2) in list(protein_bonds.get((g, h), set())): #Break bonds with partners before unbinding if unbound due to tubulin loss.
         break_protein_bond(g, h, g2, h2)
-    prot_sites[g, h, 2] = 0
+    st.prot_sites[g, h, 2] = 0
     evt_idx = bound_prots.pop((g, h))
-    prot_events[evt_idx]['t_off']   = time_elapsed
+    prot_events[evt_idx]['t_off']   = st.time_elapsed
     prot_events[evt_idx]['removal'] = removal_reason
     
-    site = int(prot_sites[g, h, 0])
-    nuc  = int(prot_sites[g, h, 1])
+    site = int(st.prot_sites[g, h, 0])
+    nuc  = int(st.prot_sites[g, h, 1])
     
     n_bindable_sites[site] += 1     # Update count of bindable sites by site type.
     n_bound_prots_by_nuc[site][nuc] -= 1   # Update count of bound proteins by site type and nucleotide state.
@@ -417,14 +418,14 @@ def form_protein_bond(g1: int, h1: int, g2: int, h2: int) -> None:
 
     # Update n_bonded_prots_by_nuc
     if was_unbonded_1:
-        site = int(prot_sites[g1, h1, 0])
-        nuc  = int(prot_sites[g1, h1, 1])
+        site = int(st.prot_sites[g1, h1, 0])
+        nuc  = int(st.prot_sites[g1, h1, 1])
         if site in n_bonded_prots_by_nuc:
             n_bonded_prots_by_nuc[site][nuc] += 1
 
     if was_unbonded_2:
-        site = int(prot_sites[g2, h2, 0])
-        nuc  = int(prot_sites[g2, h2, 1])
+        site = int(st.prot_sites[g2, h2, 0])
+        nuc  = int(st.prot_sites[g2, h2, 1])
         if site in n_bonded_prots_by_nuc:
             n_bonded_prots_by_nuc[site][nuc] += 1
 
@@ -437,8 +438,8 @@ def break_protein_bond(g1: int, h1: int, g2: int, h2: int) -> None:
         protein_bonds[(g1, h1)].discard((g2, h2))
         if not protein_bonds[(g1, h1)]: # An empty set is False
             del protein_bonds[(g1, h1)]
-            site = int(prot_sites[g1, h1, 0])
-            nuc  = int(prot_sites[g1, h1, 1])
+            site = int(st.prot_sites[g1, h1, 0])
+            nuc  = int(st.prot_sites[g1, h1, 1])
             if site in n_bonded_prots_by_nuc:
                 n_bonded_prots_by_nuc[site][nuc] -= 1
 
@@ -446,8 +447,8 @@ def break_protein_bond(g1: int, h1: int, g2: int, h2: int) -> None:
         protein_bonds[(g2, h2)].discard((g1, h1))
         if not protein_bonds[(g2, h2)]:
             del protein_bonds[(g2, h2)]
-            site = int(prot_sites[g2, h2, 0])
-            nuc  = int(prot_sites[g2, h2, 1])
+            site = int(st.prot_sites[g2, h2, 0])
+            nuc  = int(st.prot_sites[g2, h2, 1])
             if site in n_bonded_prots_by_nuc:
                 n_bonded_prots_by_nuc[site][nuc] -= 1
                 
@@ -458,8 +459,8 @@ def break_protein_bond(g1: int, h1: int, g2: int, h2: int) -> None:
 FORCED_UNBIND_SITE_TYPES = {SITE_EMPTY, SITE_SINGLE}
 
 def update_pocket(g: int, h: int) -> None:
-    old_site_type = int(prot_sites[g, h, 0])
-    old_nuc_state = int(prot_sites[g, h, 1])
+    old_site_type = int(st.prot_sites[g, h, 0])
+    old_nuc_state = int(st.prot_sites[g, h, 1])
     
     new_site_type = classify_pocket(g, h, pf_len)
     new_nuc_state = compute_pocket_nuc_state(g, h)
@@ -476,8 +477,8 @@ def update_pocket(g: int, h: int) -> None:
             if new_site_type in n_bindable_sites:
                 n_bindable_sites[new_site_type] += 1
             
-            prot_sites[g, h, 0] = new_site_type
-            prot_sites[g, h, 1] = new_nuc_state
+            st.prot_sites[g, h, 0] = new_site_type
+            st.prot_sites[g, h, 1] = new_nuc_state
             return
         
         if (old_site_type != new_site_type) or (old_nuc_state != new_nuc_state):
@@ -495,16 +496,16 @@ def update_pocket(g: int, h: int) -> None:
             if new_site_type in n_bindable_sites:
                 n_bindable_sites[new_site_type] += 1
 
-    prot_sites[g, h, 0] = new_site_type
-    prot_sites[g, h, 1] = new_nuc_state
+    st.prot_sites[g, h, 0] = new_site_type
+    st.prot_sites[g, h, 1] = new_nuc_state
 
 
 def update_prot_events_now(g: int, h: int) -> None:
     if (g, h) not in bound_prots:
         return
     evt_idx = bound_prots[(g, h)]
-    prot_events[evt_idx]["site_type_now"] = int(prot_sites[g, h, 0])
-    prot_events[evt_idx]["nuc_state_now"] = int(prot_sites[g, h, 1])
+    prot_events[evt_idx]["site_type_now"] = int(st.prot_sites[g, h, 0])
+    prot_events[evt_idx]["nuc_state_now"] = int(st.prot_sites[g, h, 1])
     
 
 def refresh_all(g: int, h: int) -> None:
@@ -538,7 +539,7 @@ def refresh_local_environment_after_tubulin_change(pf: int, h: int) -> None:
  
 def height_in_bounds(h: int) -> bool:
     """True if height h is valid for the preallocated arrays."""
-    return 0 <= h < MT_lattice.shape[1]
+    return 0 <= h < st.MT_lattice.shape[1]
 
 def require_height_in_bounds(h: int) -> None:
     """
@@ -547,5 +548,5 @@ def require_height_in_bounds(h: int) -> None:
     if not height_in_bounds(h):
         raise RuntimeError(
             f"Simulation exceeded preallocated height capacity: h={h}, "
-            f"max_valid={MT_lattice.shape[1] - 1}"
+            f"max_valid={st.MT_lattice.shape[1] - 1}"
         )
