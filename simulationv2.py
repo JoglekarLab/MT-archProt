@@ -17,6 +17,7 @@ from datetime import datetime
 from params import *
 from helpers import classify_pocket
 from initialization import *
+import initialization as st
 from simulation_helpers import *
 
 def sample_exponential_dt(rate: float) -> float:
@@ -66,14 +67,13 @@ def choose_next_event(candidate_events):
 
 def update_highest_full_GDP(hydrolyzed_hh: int) -> None:
     """
-    Walk up from highest_full_GDP checking if all PFs are GDP at each row.
+    Walk up from st.highest_full_GDP checking if all PFs are GDP at each row.
     Stop at the first row where any PF is still GTP.
     up_to: the height of the dimer that just hydrolyzed.
     """
-    global highest_full_GDP
-    for hh in range(highest_full_GDP + 1, hydrolyzed_hh + 1):
-        if all(MT_lattice[pf, hh, 0] == 1 for pf in range(n_pf)):
-            highest_full_GDP = hh
+    for hh in range(st.highest_full_GDP + 1, hydrolyzed_hh + 1):
+        if all(st.MT_lattice[pf, hh, 0] == 1 for pf in range(n_pf)):
+            st.highest_full_GDP = hh
         else:
             break
 
@@ -84,13 +84,13 @@ def execute_hydrolysis(dt: float) -> None:
     Hydrolysis check called once per iteration after the winning event fires. This is computationally more efficient than putting all hydrolysis events in the candidate list for Guillespie.
     """
     for pf in range(n_pf):
-        for hh in range(pf_len[pf] - 2, highest_full_GDP, -1):
+        for hh in range(pf_len[pf] - 2, st.highest_full_GDP, -1):
 
-            if MT_lattice[pf, hh, 0] == 1:  # already GDP
+            if st.MT_lattice[pf, hh, 0] == 1:  # already GDP
                 continue
 
             if sample_exponential_dt(k_hydrolysis) < dt:
-                MT_lattice[pf, hh, 0] = 1   # GTP → GDP
+                st.MT_lattice[pf, hh, 0] = 1   # GTP → GDP
                 update_highest_full_GDP(hydrolyzed_hh=hh)
                 refresh_local_environment_after_tubulin_change(pf, hh)
                 
@@ -102,8 +102,6 @@ def generate_tub_add_events():
     candidate_events = []
     for pf_idx in range(n_pf):
         hh = pf_len[pf_idx]  # next available height where a new tubulin can go
-        if not height_in_bounds(hh):
-            continue
         event = make_event('tub_add', rate=kon_tub * conc_tubGTP, h=hh, pf=pf_idx)
         candidate_events.append(event)
     return candidate_events
@@ -196,8 +194,8 @@ def generate_prot_remove_events():
     for (g, h) in bound_prots:
         if prot_bond_count(g, h) > 0:
             continue
-        site = int(prot_sites[g, h, 0])
-        nuc  = int(prot_sites[g, h, 1])
+        site = int(st.prot_sites[g, h, 0])
+        nuc  = int(st.prot_sites[g, h, 1])
         is_lattice = (site == SITE_LATTICE)
         is_gdp     = (nuc != NUC_GTP)
 
@@ -270,10 +268,14 @@ def execute_tub_add(event: dict) -> None:
     if int(pf_len[pf]) != h: # sanity check
         raise RuntimeError(f"tub_add height mismatch: pf={pf}, h={h}, pf_len={pf_len[pf]}")
 
+    # Make room before writing. +2 of headroom covers the seam lookups in
+    # get_right_bond_break_rate, which reach up to h+2 on PF0.
+    st.ensure_height(h + 2)
+
     pf_len[pf] += 1 # extend the protofilament
 
-    # new dimer is GTP by default (MT_lattice already zero-initialized)
-    # MT_lattice[pf, h, 0] = 0  # explicit but redundant for fresh positions
+    # new dimer is GTP by default (st.MT_lattice already zero-initialized)
+    # st.MT_lattice[pf, h, 0] = 0  # explicit but redundant for fresh positions
 
     refresh_local_environment_after_tubulin_change(pf, h) # recompute affected pockets
 
@@ -292,8 +294,8 @@ def execute_tub_remove(event: dict) -> None:
         raise RuntimeError(f"Tubulin at PF {pf}, h={h} is not removable")
 
     # clear stored state at that lattice site (optional but cleaner)
-    MT_lattice[pf, h, 0] = 0   # hydrolysis layer reset
-    MT_lattice[pf, h, 1] = 0   # right-bond count reset
+    st.MT_lattice[pf, h, 0] = 0   # hydrolysis layer reset
+    st.MT_lattice[pf, h, 1] = 0   # right-bond count reset
 
     pf_len[pf] -= 1 # shorten PF
     refresh_local_environment_after_tubulin_change(pf, h)
@@ -310,13 +312,13 @@ def execute_lat_bond_form(event: dict) -> None:
         current = right_bond_count(pf, h)
         if current >= 2:
             raise RuntimeError(f"lat_bond_form seam: already fully bonded at PF {pf}, h={h}")
-        MT_lattice[pf, h, 1] += 1
-        if MT_lattice[pf, h, 1] == 2:   # seam needs both bonds to be "fully bonded"
+        st.MT_lattice[pf, h, 1] += 1
+        if st.MT_lattice[pf, h, 1] == 2:   # seam needs both bonds to be "fully bonded"
             highest_lat[pf] = h
     else:
         if right_bond_count(pf, h) >= 1:
             raise RuntimeError(f"lat_bond_form: already bonded at PF {pf}, h={h}")
-        MT_lattice[pf, h, 1] = 1
+        st.MT_lattice[pf, h, 1] = 1
         highest_lat[pf] = h              # h is now the new highest bonded
 
     refresh_local_environment_after_tubulin_change(pf, h)
@@ -329,7 +331,7 @@ def execute_lat_bond_break(event: dict) -> None:
     if right_bond_count(pf, h) == 0:
         raise RuntimeError(f"lat_bond_break: no right bond at PF {pf}, h={h}")
 
-    MT_lattice[pf, h, 1] -= 1
+    st.MT_lattice[pf, h, 1] -= 1
 
     SEAM_PF = n_pf - 1
     if pf == SEAM_PF:
@@ -375,8 +377,8 @@ def execute_prot_remove(event: dict) -> None:
     for (g, h) in bound_prots:
         if prot_bond_count(g, h) > 0:   # NEW: bonded proteins cannot be removed
             continue
-        site = int(prot_sites[g, h, 0])
-        nuc  = int(prot_sites[g, h, 1])
+        site = int(st.prot_sites[g, h, 0])
+        nuc  = int(st.prot_sites[g, h, 1])
         is_lattice = (site == SITE_LATTICE)
         is_gdp     = (nuc != NUC_GTP)
         if is_lattice == lattice_event and is_gdp == gdp_event:
@@ -430,12 +432,12 @@ def plot_pf_lengths_and_lattice_occupancy():
     tip_img = np.zeros((max_h - tip_start, n_pf), dtype=int)
     for pf in range(n_pf):
         for h in range(tip_start, pf_len[pf]):
-            tip_img[h - tip_start, pf] = 1 if MT_lattice[pf, h, 0] == 0 else 2
+            tip_img[h - tip_start, pf] = 1 if st.MT_lattice[pf, h, 0] == 0 else 2
 
     ax1.imshow(tip_img, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
     ax1.set_xlabel("Protofilament")
     ax1.set_ylabel(f"Height (rows {tip_start}–{max_h})")
-    ax1.set_title(f"Tip region at t = {time_elapsed:.4f} s")
+    ax1.set_title(f"Tip region at t = {st.time_elapsed:.4f} s")
     ax1.set_yticks(np.arange(0, max_h - tip_start, 5))
     ax1.set_yticklabels(np.arange(tip_start, max_h, 5))
     ax1.legend(handles=legend_elements, loc='upper right')
@@ -454,24 +456,24 @@ def plot_pf_lengths_and_lattice_occupancy():
 
     for g in range(1, n_pf):
         for h in range(tip_start, max_h):
-            if prot_sites[g, h, 2] == 1:
+            if st.prot_sites[g, h, 2] == 1:
                 ax1.plot(g - 0.5, h - tip_start, '.', color='#00FF00', markersize=8)
 
     # --- ax2: full lattice ---
     lattice_img = np.zeros((max_h, n_pf), dtype=int)
     for pf in range(n_pf):
         for h in range(pf_len[pf]):
-            lattice_img[h, pf] = 1 if MT_lattice[pf, h, 0] == 0 else 2
+            lattice_img[h, pf] = 1 if st.MT_lattice[pf, h, 0] == 0 else 2
 
     ax2.imshow(lattice_img, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
     ax2.set_xlabel("Protofilament")
     ax2.set_ylabel("Height")
-    ax2.set_title(f"Full lattice at t = {time_elapsed:.4f} s")
+    ax2.set_title(f"Full lattice at t = {st.time_elapsed:.4f} s")
     ax2.legend(handles=legend_elements, loc='upper right')
 
     for g in range(1, n_pf):
         for h in range(max_h):
-            if prot_sites[g, h, 2] == 1:
+            if st.prot_sites[g, h, 2] == 1:
                 ax2.plot(g - 0.5, h, '.', color='#00FF00', markersize=8)
 
     for pf in range(n_pf - 1):
@@ -490,12 +492,12 @@ def plot_pf_lengths_and_lattice_occupancy():
     tip_img3 = np.zeros((max_h - tip_start, n_pf), dtype=int)
     for pf in range(n_pf):
         for h in range(tip_start, pf_len[pf]):
-            tip_img3[h - tip_start, pf] = 1 if MT_lattice[pf, h, 0] == 0 else 2
+            tip_img3[h - tip_start, pf] = 1 if st.MT_lattice[pf, h, 0] == 0 else 2
 
     ax3.imshow(tip_img3, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
     ax3.set_xlabel("Protofilament")
     ax3.set_ylabel(f"Height (rows {tip_start}–{max_h})")
-    ax3.set_title(f"Inter-protein bonds at tip, t = {time_elapsed:.4f} s  "
+    ax3.set_title(f"Inter-protein bonds at tip, t = {st.time_elapsed:.4f} s  "
                   f"({len(protein_bonds)} bonded proteins, "
                   f"{sum(len(v) for v in protein_bonds.values()) // 2} bonds)")
     ax3.set_yticks(np.arange(0, max_h - tip_start, 5))
@@ -504,7 +506,7 @@ def plot_pf_lengths_and_lattice_occupancy():
     # draw all bound proteins in tip region
     for g in range(1, n_pf):
         for h in range(tip_start, max_h):
-            if prot_sites[g, h, 2] == 1:
+            if st.prot_sites[g, h, 2] == 1:
                 color = '#00CC00' if (g, h) in protein_bonds else '#9ACD32'
                 ax3.plot(g - 0.5, h - tip_start, 'o', color=color, markersize=7, zorder=3)
 
@@ -554,14 +556,14 @@ def plot_pf_lengths_and_lattice_occupancy():
 #     ax1.bar(np.arange(n_pf), pf_len.copy(), width=1.0, edgecolor='blue', linewidth=0.3)
 #     ax1.set_xlabel("Protofilament")
 #     ax1.set_ylabel("Length")
-#     ax1.set_title(f"PF lengths at t = {time_elapsed:.4f} s")
+#     ax1.set_title(f"PF lengths at t = {st.time_elapsed:.4f} s")
 
 #     # --- ax2: lattice occupancy ---
 #     max_h = int(pf_len.max())
 #     lattice_img = np.zeros((max_h, n_pf), dtype=int)
 #     for pf in range(n_pf):
 #         for h in range(pf_len[pf]):
-#             if MT_lattice[pf, h, 0] == 0:
+#             if st.MT_lattice[pf, h, 0] == 0:
 #                 lattice_img[h, pf] = 1   # GTP
 #             else:
 #                 lattice_img[h, pf] = 2   # GDP
@@ -570,7 +572,7 @@ def plot_pf_lengths_and_lattice_occupancy():
 #     ax2.imshow(lattice_img, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
 #     ax2.set_xlabel("Protofilament")
 #     ax2.set_ylabel("Height")
-#     ax2.set_title(f"Lattice + protein occupancy at t = {time_elapsed:.4f} s")
+#     ax2.set_title(f"Lattice + protein occupancy at t = {st.time_elapsed:.4f} s")
 
 #     legend_elements = [
 #         Patch(facecolor='#0a2472', label='GTP'),
@@ -580,7 +582,7 @@ def plot_pf_lengths_and_lattice_occupancy():
 
 #     for g in range(1, n_pf):
 #         for h in range(max_h):
-#             if prot_sites[g, h, 2] == 1:
+#             if st.prot_sites[g, h, 2] == 1:
 #                 ax2.plot(g - 0.5, h, '.', color='#00FF00', markersize=8)
 
 #     for pf in range(n_pf - 1):
@@ -599,7 +601,7 @@ def plot_pf_lengths_and_lattice_occupancy():
 #     groove_img2 = np.zeros((max_h, n_pf), dtype=int)
 #     for pf in range(n_pf):
 #         for h in range(pf_len[pf]):
-#             if MT_lattice[pf, h, 0] == 0:
+#             if st.MT_lattice[pf, h, 0] == 0:
 #                 groove_img2[h, pf] = 1   # GTP
 #             else:
 #                 groove_img2[h, pf] = 2   # GDP
@@ -608,14 +610,14 @@ def plot_pf_lengths_and_lattice_occupancy():
 #     ax3.imshow(groove_img2, origin='lower', aspect='auto', cmap=cmap2, vmin=0, vmax=2)
 #     ax3.set_xlabel("Protofilament")
 #     ax3.set_ylabel("Height")
-#     ax3.set_title(f"Inter-protein bonds at t = {time_elapsed:.4f} s  "
+#     ax3.set_title(f"Inter-protein bonds at t = {st.time_elapsed:.4f} s  "
 #                   f"({len(protein_bonds)} bonded proteins, "
 #                   f"{sum(len(v) for v in protein_bonds.values()) // 2} bonds)")
 
 #     # draw all bound proteins: unbound in light yellowish-green, bonded in bright green
 #     for g in range(1, n_pf):
 #         for h in range(max_h):
-#             if prot_sites[g, h, 2] == 1:
+#             if st.prot_sites[g, h, 2] == 1:
 #                 color = '#00CC00' if (g, h) in protein_bonds else '#9ACD32'
 #                 ax3.plot(g - 0.5, h, 'o', color=color, markersize=7, zorder=3)
 
@@ -664,14 +666,14 @@ def plot_pf_lengths_and_lattice_occupancy():
 #     ax1.bar(np.arange(n_pf), pf_len.copy(), width=1.0, edgecolor='blue', linewidth=0.3)
 #     ax1.set_xlabel("Protofilament")
 #     ax1.set_ylabel("Length")
-#     ax1.set_title(f"PF lengths at t = {time_elapsed:.4f} s")
+#     ax1.set_title(f"PF lengths at t = {st.time_elapsed:.4f} s")
     
 #     # --- right: lattice occupancy with protein overlay and GTP/GDP coloring ---
 #     max_h = int(pf_len.max())
 #     lattice_img = np.zeros((max_h, n_pf), dtype=int)
 #     for pf in range(n_pf):
 #         for h in range(pf_len[pf]):
-#             if MT_lattice[pf, h, 0] == 0:
+#             if st.MT_lattice[pf, h, 0] == 0:
 #                 lattice_img[h, pf] = 1   # GTP
 #             else:
 #                 lattice_img[h, pf] = 2   # GDP
@@ -680,7 +682,7 @@ def plot_pf_lengths_and_lattice_occupancy():
 #     im = ax2.imshow(lattice_img, origin='lower', aspect='auto', cmap=cmap, vmin=0, vmax=2)
 #     ax2.set_xlabel("Protofilament")
 #     ax2.set_ylabel("Height")
-#     ax2.set_title(f"Lattice + protein occupancy at t = {time_elapsed:.4f} s")
+#     ax2.set_title(f"Lattice + protein occupancy at t = {st.time_elapsed:.4f} s")
     
 #     # fig.colorbar(im, ax=ax2, label="Tubulin present")
 #     # cbar = fig.colorbar(im, ax=ax2, ticks=[1, 2])
@@ -699,7 +701,7 @@ def plot_pf_lengths_and_lattice_occupancy():
 #     # overlay bound proteins as dots
 #     for g in range(1, n_pf):  # skip seam grooves 0 and n_pf
 #         for h in range(max_h):
-#             if prot_sites[g, h, 2] == 1:
+#             if st.prot_sites[g, h, 2] == 1:
 #                 ax2.plot(g - 0.5, h, '.', color='#00FF00', markersize=8)  # g-0.5 centers the dot between the two PFs
 
 #     # overlay lateral bonds as horizontal lines between PF columns
@@ -771,14 +773,130 @@ def print_candidate_events(candidates):
 # MAIN LOOP (tubulin addition only)
 # -----------------------------------------------------------
 
-n_iterations = 10000
+n_iterations  = 10000
 snapshot_freq = 250
-print_freq = 1000   # steps between console prints (0 = never print)
+print_freq    = 1000   # steps between console prints (0 = never print)
+make_gif      = True    # rendering costs more wall time than the simulation;
+                        # run_sim.py turns this off by default for sweeps
+record_positions = True # record where every bound protein sits at each
+                        # snapshot, plus a per-height lattice summary.
+                        # Needed for kymographs and comet profiles.
+max_sim_time  = None    # stop once this many SIMULATED seconds have elapsed.
+                        # None = run the full n_iterations.
+                        # A step buys less simulated time at high protein
+                        # concentration (more events are protein events), so
+                        # runs matched on step count are NOT matched on
+                        # simulated time. Stop on this to compare fairly.
+
+
+# -----------------------------------------------------------
+# OBSERVABLES
+# -----------------------------------------------------------
+
+def oligomer_sizes() -> list:
+    """
+    Size in subunits of every connected cluster in protein_bonds, largest first.
+    Monomers are not listed here: an unbonded protein has no entry in
+    protein_bonds. Recover them as out_n_bound - sum(sizes).
+    """
+    seen, sizes = set(), []
+    for node in protein_bonds:
+        if node in seen:
+            continue
+        stack, size = [node], 0
+        while stack:
+            u = stack.pop()
+            if u in seen:
+                continue
+            seen.add(u)
+            size += 1
+            stack.extend(protein_bonds.get(u, ()))
+        sizes.append(size)
+    sizes.sort(reverse=True)
+    return sizes
+
+
+def largest_oligomer() -> int:
+    """Biggest cluster, 0 if nothing is bonded."""
+    s = oligomer_sizes()
+    return s[0] if s else 0
+
+
+def count_bound_by_site_and_nuc() -> dict:
+    """
+    Live count of bound proteins keyed by (site_type, is_gdp), read straight off
+    prot_sites rather than from the n_bound_prots_by_nuc counters, so the numbers
+    written to disk do not depend on that bookkeeping being correct.
+    """
+    counts = {(s, gdp): 0
+              for s in (SITE_LATTICE, SITE_EDGELAT2, SITE_EDGELONG2, SITE_EDGE3)
+              for gdp in (0, 1)}
+    for (g_idx, h) in bound_prots:
+        site = int(st.prot_sites[g_idx, h, 0])
+        nuc = int(st.prot_sites[g_idx, h, 1])
+        key = (site, 0 if nuc == NUC_GTP else 1)
+        if key in counts:
+            counts[key] += 1
+    return counts
+
+
+def record_snapshot(step: int) -> None:
+    """
+    Append one row of observables. Previously this pushed a hardcoded 0 into
+    out_n_bound and never touched the eight out_n_GTP_* / out_n_GDP_* lists,
+    so a finished run carried no protein numbers at all.
+    """
+    out_step.append(int(step))
+    out_time.append(float(st.time_elapsed))
+    out_pf_lengths.append(pf_len.copy())
+    out_n_bound.append(len(bound_prots))
+    out_n_bonds.append(sum(len(v) for v in protein_bonds.values()) // 2)
+    sizes = oligomer_sizes()                      # one walk, used twice
+    out_max_oligo.append(sizes[0] if sizes else 0)
+    out_oligo_sizes.append(np.array(sizes, dtype=np.int16))
+
+    if record_positions:
+        # Per-height lattice summary. This is the same information the GIF
+        # draws, stored as numbers instead of pixels: rendering is what costs
+        # wall time, collecting is nearly free. Kymographs and comet profiles
+        # can both be rebuilt from this later without re-running.
+        H = int(pf_len.max())
+        present = np.arange(H)[None, :] < pf_len[:, None]          # (n_pf, H)
+        gdp = (st.MT_lattice[:, :H, 0] == 1) & present
+        out_lat_ntub.append(present.sum(0).astype(np.int16))
+        out_lat_ngdp.append(gdp.sum(0).astype(np.int16))
+
+        if bound_prots:
+            out_positions.append(np.array(
+                [(g, h,
+                  int(st.prot_sites[g, h, 0]),
+                  int(st.prot_sites[g, h, 1]),
+                  1 if (g, h) in protein_bonds else 0)
+                 for (g, h) in bound_prots], dtype=np.int32))
+        else:
+            out_positions.append(np.zeros((0, 5), dtype=np.int32))
+
+    c = count_bound_by_site_and_nuc()
+    out_n_GTP_0.append(c[(SITE_LATTICE, 0)])
+    out_n_GDP_0.append(c[(SITE_LATTICE, 1)])
+    out_n_GTP_1.append(c[(SITE_EDGELAT2, 0)])
+    out_n_GDP_1.append(c[(SITE_EDGELAT2, 1)])
+    out_n_GTP_2.append(c[(SITE_EDGELONG2, 0)])
+    out_n_GDP_2.append(c[(SITE_EDGELONG2, 1)])
+    out_n_GTP_3.append(c[(SITE_EDGE3, 0)])
+    out_n_GDP_3.append(c[(SITE_EDGE3, 1)])
 
 def run_simulation():
-    global time_elapsed
+
+    stop_reason = 'n_iterations'
 
     for step in range(1, n_iterations + 1):
+
+        if max_sim_time is not None and st.time_elapsed >= max_sim_time:
+            stop_reason = 'max_sim_time'
+            print(f"Reached max_sim_time={max_sim_time} s at step {step - 1} "
+                  f"(t={st.time_elapsed:.3f} s)")
+            break
 
         # --- build candidate list ---
         candidates = (generate_tub_add_events()
@@ -794,6 +912,7 @@ def run_simulation():
         event = choose_next_event(candidates)
         if event is None:
             print(f"No candidates at step {step}, stopping.")
+            stop_reason = 'no_candidates'
             break
         
         if print_freq > 0 and step % print_freq == 0:
@@ -802,7 +921,7 @@ def run_simulation():
             print_selected_event(event)
 
         # --- advance time ---
-        time_elapsed += event['dt']
+        st.time_elapsed += event['dt']
 
         # --- execute ---
         if event['event_type'] == 'tub_add':
@@ -827,36 +946,59 @@ def run_simulation():
 
         # --- snapshot ---
         if step % snapshot_freq == 0:
-            out_time.append(time_elapsed)
-            out_pf_lengths.append(pf_len.copy())
-            out_n_bound.append(0)
+            record_snapshot(step)
 
-            print(f"  After execution:")
-            print(f"    t={time_elapsed:.4f}s")
-            print(f"    pf_len       = {list(pf_len)}")
-            print(f"    highest_lat  = {list(highest_lat)}")
-            print(f"    mean_len={pf_len.mean():.1f}  max={pf_len.max()}  min={pf_len.min()}")
+            if print_freq > 0:
+                print(f"  After execution:")
+                print(f"    t={st.time_elapsed:.4f}s")
+                print(f"    pf_len       = {list(pf_len)}")
+                print(f"    highest_lat  = {list(highest_lat)}")
+                print(f"    mean_len={pf_len.mean():.1f}  max={pf_len.max()}  min={pf_len.min()}")
 
-            plot_pf_lengths_and_lattice_occupancy()
+            if make_gif:
+                plot_pf_lengths_and_lattice_occupancy()
 
-run_simulation()
+    # final row, so the end state is always recorded even if the loop stopped early
+    if not out_step or out_step[-1] != step:
+        record_snapshot(step)
+    return stop_reason
 
-if frames:
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+def save_gif(path: str = None) -> str:
+    """Write the collected frames. Returns the path, or None if there were none."""
+    if not frames:
+        return None
+    if path is None:
+        path = f"simulation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gif"
     frames[0].save(
-        f"simulation_{timestamp}.gif",
+        path,
         save_all=True,
         append_images=frames[1:],
         duration=500,   # ms per frame
         loop=0
     )
-    print(f"Saved simulation.gif ({len(frames)} frames)")
-    
-print("\n=== MT_lattice final state ===")
-for pf in range(n_pf):
-    print(f"\n  PF {pf} (len={pf_len[pf]}):")
-    print(f"  {'h':>4}  {'hydro':>6}  {'r_bonds':>8}")
-    for h in range(pf_len[pf]):
-        hydro  = int(MT_lattice[pf, h, 0])
-        rbonds = int(MT_lattice[pf, h, 1])
-        print(f"  {h:>4}  {hydro:>6}  {rbonds:>8}")
+    print(f"Saved {path} ({len(frames)} frames)")
+    return path
+
+
+def print_height_report() -> None:
+    print(f"\nLattice height: {st.MT_lattice.shape[1]} rows "
+          f"({st.n_height_grows} reallocation(s) from {array_len_init}); "
+          f"tallest protofilament = {int(pf_len.max())}")
+
+
+def print_final_state() -> None:
+    print("\n=== MT_lattice final state ===")
+    for pf in range(n_pf):
+        print(f"\n  PF {pf} (len={pf_len[pf]}):")
+        print(f"  {'h':>4}  {'hydro':>6}  {'r_bonds':>8}")
+        for h in range(pf_len[pf]):
+            hydro  = int(st.MT_lattice[pf, h, 0])
+            rbonds = int(st.MT_lattice[pf, h, 1])
+            print(f"  {h:>4}  {hydro:>6}  {rbonds:>8}")
+
+
+if __name__ == "__main__":
+    run_simulation()
+    save_gif()
+    print_height_report()
+    print_final_state()
