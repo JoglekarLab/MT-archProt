@@ -56,8 +56,60 @@ MT_lattice = np.zeros((n_pf, array_len_init, 2), dtype=np.int8)
 # MATLAB: EB1BindingPositions
 # =============================================================
 prot_sites = np.zeros((n_pf + 1, array_len_init, 3), dtype=np.int8)
+prot_sites[:, :, 0] = SITE_EMPTY # Not left at 0, because SITE_LATTICE == 0
 prot_sites[0, :, 0] = SITE_SEAM
 prot_sites[n_pf, :, 0] = SITE_SEAM
+
+
+# =============================================================
+# HEIGHT CAPACITY
+# =============================================================
+# MT_lattice and prot_sites are allocated at array_len_init rows and grown on
+# demand by ensure_height(). array_len_init is only the starting size
+
+height_grow_chunk = 512      # rows added per reallocation (~35 KB each)
+max_array_rows    = 200000
+n_height_grows    = 0        # bookkeeping, reported at end of run
+
+
+def _new_prot_rows(n_rows: int) -> np.ndarray:
+    rows = np.zeros((n_pf + 1, n_rows, 3), dtype=np.int8)
+    rows[:, :, 0] = SITE_EMPTY
+    rows[0, :, 0] = SITE_SEAM
+    rows[n_pf, :, 0] = SITE_SEAM
+    return rows
+
+
+def ensure_height(min_rows: int) -> bool:
+    """
+    ensure_height allocates a bigger array and copies the old contents in
+    """
+    global MT_lattice, prot_sites, n_height_grows
+
+    cur_rows = MT_lattice.shape[1]
+    if min_rows <= cur_rows:
+        return False
+
+    new_rows = max(int(min_rows), cur_rows + height_grow_chunk)
+
+    if new_rows > max_array_rows:
+        raise RuntimeError(
+            f"Microtubule needs {new_rows} lattice rows, above max_array_rows="
+            f"{max_array_rows}. Either the run is genuinely this long, in which "
+            f"case raise max_array_rows in initialization.py, or growth is "
+            f"running away because nothing triggers catastrophe."
+        )
+
+    grown_mt = np.zeros((n_pf, new_rows, 2), dtype=MT_lattice.dtype)
+    grown_mt[:, :cur_rows, :] = MT_lattice
+    MT_lattice = grown_mt
+
+    grown_ps = _new_prot_rows(new_rows)
+    grown_ps[:, :cur_rows, :] = prot_sites
+    prot_sites = grown_ps
+
+    n_height_grows += 1
+    return True
 
 
 # =============================================================
@@ -137,9 +189,21 @@ lateral_breaking_fold_factor = 1.0 # Catastrophe multiplier; 1.0 normally, set t
 # ADDITIONAL OUTPUTS
 # =============================================================
 # Lists appended every snapshot_freq steps in the simulation loop.
+out_step        = []    # Gillespie step index at each snapshot
 out_time        = []    # elapsed simulation time at each snapshot
 out_pf_lengths  = []    # full pf_len array (n_pf values) at each snapshot
 out_n_bound     = []    # total EB1 proteins bound at snapshot
+out_n_bonds     = []    # inter-protein bonds present at snapshot
+out_max_oligo   = []    # largest connected oligomer (subunits) at snapshot
+out_oligo_sizes = []    # per snapshot, (n_oligomers,) int16: size of every
+                        # connected cluster, largest first. Monomers are NOT
+                        # in here -- get them as out_n_bound[i] - sizes.sum().
+out_lat_ntub    = []    # per snapshot, (H,) int16: tubulins present at each height
+out_lat_ngdp    = []    # per snapshot, (H,) int16: GDP dimers at each height
+out_positions   = []    # per snapshot, an (n_bound, 5) int32 array of
+                        # (groove, height, site_type, nuc_state, is_bonded).
+                        # This is the height-resolved record: everything else
+                        # about where proteins sit is derived from it.
 
 # Bound protein counts split by site type and pocket nucleotide state.
 # GTP = NUC_GTP pocket; GDP = NUC_MIXED or NUC_GDP pocket.
@@ -178,6 +242,10 @@ n_bindable_sites = {
 
 for g in range(n_pf + 1):
     for h in range(seed_length):
+        prot_sites[g, h, 0] = classify_pocket(g, h, pf_len)
+
+for g in range(n_pf + 1):
+    for h in range(seed_length):
         site = int(prot_sites[g, h, 0])
         if site in n_bindable_sites:
             n_bindable_sites[site] += 1
@@ -198,9 +266,6 @@ n_bound_prots_by_nuc = {
 
 # Seam grooves (g=0 and g=n_pf) are part of the seam and contain no protein.
 # Classify all pockets from height 0 to seed_length-1.
-for g in range(n_pf + 1):
-    for h in range(seed_length):
-        prot_sites[g, h, 0] = classify_pocket(g, h, pf_len)
 
 
 
@@ -292,3 +357,34 @@ tip_labels = {
 tip_types = [tip_labels[int(prot_sites[g, seed_length - 1, 0])]
              for g in range(n_pf + 1)]
 print(f"  Tip row site types: {tip_types}")
+
+
+# =============================================================
+# EXPORTS
+# =============================================================
+# Deliberately does NOT export the names that get rebound during a run:
+#   MT_lattice, prot_sites  -- rebound by ensure_height() when the MT grows
+#   time_elapsed            -- rebound every Gillespie step
+#   highest_full_GDP        -- rebound by update_highest_full_GDP()
+#   lateral_breaking_fold_factor -- rebound at catastrophe
+#   n_height_grows          -- rebound by ensure_height()
+#
+# `from initialization import *` copies values, not references, so a star-imported
+# copy of any of these goes stale the moment the owner rebinds it. Leaving them
+# out of __all__ means a stale bare reference is a NameError instead of a silent
+# wrong answer. Reach them as `initialization.<name>` (aliased as `st.` elsewhere).
+# Rebind = get a new box, move the tag to it. The old box still sits there, and any other tag on it still points at the old contents.
+# Arrays and containers that are only ever mutated in place (pf_len, the dicts,
+# the out_* lists) are safe to star-import and stay here.
+__all__ = [
+    'pf_len', 'highest_lat',
+    'prot_events', 'bound_prots', 'protein_bonds',
+    'n_bindable_sites', 'n_bound_prots_by_nuc', 'n_bonded_prots_by_nuc',
+    'oligomer_info', 'tethered',
+    'out_step', 'out_time', 'out_pf_lengths', 'out_n_bound',
+    'out_n_bonds', 'out_max_oligo', 'out_oligo_sizes', 'out_positions',
+    'out_lat_ntub', 'out_lat_ngdp',
+    'out_n_GTP_0', 'out_n_GDP_0', 'out_n_GTP_1', 'out_n_GDP_1',
+    'out_n_GTP_2', 'out_n_GDP_2', 'out_n_GTP_3', 'out_n_GDP_3',
+    'ensure_height', 'height_grow_chunk', 'validate_initialization',
+]
