@@ -156,6 +156,13 @@ prot_events = []
 #               (8, 26): 2,   # protein at groove 8, height 26 is entry 2 in prot_events
 #               }
 bound_prots = {}
+
+# Proteins that have let go of the lattice but are still held by their oligomer.
+# Same (g, h) -> prot_events index mapping as bound_prots, and the key is the
+# pocket the subunit is hovering over -- it keeps that position so protein_bonds
+# needs no re-keying, and the pocket stays blocked while it is there.
+tethered_prots = {}
+
 protein_bonds = {}              # Proteins can oligomerize forming bonds to adjacent proteins depending on the kernel.
                                 # This dict tracks which proteins are bonded to which, such as:
                                 # protein_bonds = {(3, 25): {(4, 25)}, (4, 25): {(3, 25), (5, 25)}, (5, 25): {(4, 25)}}
@@ -192,7 +199,8 @@ lateral_breaking_fold_factor = 1.0 # Catastrophe multiplier; 1.0 normally, set t
 out_step        = []    # Gillespie step index at each snapshot
 out_time        = []    # elapsed simulation time at each snapshot
 out_pf_lengths  = []    # full pf_len array (n_pf values) at each snapshot
-out_n_bound     = []    # total EB1 proteins bound at snapshot
+out_n_bound     = []    # EB1 proteins attached to the MT at snapshot
+out_n_tethered  = []    # off the lattice but still bonded into an oligomer
 out_n_bonds     = []    # inter-protein bonds present at snapshot
 out_max_oligo   = []    # largest connected oligomer (subunits) at snapshot
 out_oligo_sizes = []    # per snapshot, (n_oligomers,) int16: size of every
@@ -328,6 +336,7 @@ def validate_initialization():
 
     assert len(prot_events) == 0, "prot_events should be empty at start"
     assert len(bound_prots) == 0, "bound_prots should be empty at start"
+    assert len(tethered_prots) == 0, "tethered_prots should be empty at start"
     assert time_elapsed == 0.0,   "time_elapsed should be 0.0 at start"
     
     
@@ -378,10 +387,10 @@ print(f"  Tip row site types: {tip_types}")
 # the out_* lists) are safe to star-import and stay here.
 __all__ = [
     'pf_len', 'highest_lat',
-    'prot_events', 'bound_prots', 'protein_bonds',
+    'prot_events', 'bound_prots', 'tethered_prots', 'protein_bonds',
     'n_bindable_sites', 'n_bound_prots_by_nuc', 'n_bonded_prots_by_nuc',
     'oligomer_info', 'tethered',
-    'out_step', 'out_time', 'out_pf_lengths', 'out_n_bound',
+    'out_step', 'out_time', 'out_pf_lengths', 'out_n_bound', 'out_n_tethered',
     'out_n_bonds', 'out_max_oligo', 'out_oligo_sizes', 'out_positions',
     'out_lat_ntub', 'out_lat_ngdp',
     'out_n_GTP_0', 'out_n_GDP_0', 'out_n_GTP_1', 'out_n_GDP_1',
