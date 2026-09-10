@@ -5,6 +5,7 @@
 # This file imports the initialized state from initialization.py.
 
 import math
+import os
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -1067,7 +1068,21 @@ def print_final_state() -> None:
 
 
 if __name__ == "__main__":
-    run_simulation()
-    save_gif()
+    import sys
+    import time as _time
+    from save_outputs import save_all
+
+    # Location where the run writes its data
+    outdir = sys.argv[1] if len(sys.argv) > 1 else \
+        f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+    _t0 = _time.time()
+    stop_reason = run_simulation()
+    _wall = _time.time() - _t0
+
+    save_all(outdir, sys.modules[__name__], stop_reason=stop_reason,
+             wall_seconds=_wall)
+
+    if make_gif:
+        save_gif(os.path.join(outdir, "simulation.gif"))
     print_height_report()
-    print_final_state()
