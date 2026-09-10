@@ -97,11 +97,26 @@ def get_pocket_site_type(g: int, h: int) -> int:
     return int(st.prot_sites[g, h, 0])
 
 
+# prot_sites layer 2 -- occupancy:
+#   0 = free
+#   1 = a protein is bound here
+#   2 = a TETHERED subunit is hovering here. It has let go of the lattice but
+#       its oligomer still holds it, so it is not bound -- yet nothing else may
+#       take the pocket while it is there.
+POCKET_FREE, POCKET_BOUND, POCKET_TETHERED = 0, 1, 2
+
+
 def get_pocket_is_bound(g: int, h: int) -> bool:
     """
     True if an EB1 molecule is currently bound at groove g, height h.
+    A tethered subunit is NOT bound -- which is what stops it forming new bonds.
     """
-    return int(st.prot_sites[g, h, 2]) == 1
+    return int(st.prot_sites[g, h, 2]) == POCKET_BOUND
+
+
+def get_pocket_is_free(g: int, h: int) -> bool:
+    """True if nothing occupies or hovers over this pocket."""
+    return int(st.prot_sites[g, h, 2]) == POCKET_FREE
 
 
 def get_pocket_is_bindable(g: int, h: int) -> bool:
@@ -117,8 +132,8 @@ def get_pocket_is_bindable(g: int, h: int) -> bool:
         return False
     if site in (SITE_SEAM, SITE_SINGLE):
         return False
-    if get_pocket_is_bound(g, h):
-        return False
+    if not get_pocket_is_free(g, h):
+        return False     # bound, or blocked by a tethered subunit
 
     return True
 
@@ -317,7 +332,7 @@ def update_tether_on_bind(g, h):
 
 def bind_protein(g: int, h: int) -> None:
     """Mark a pocket as occupied and record the binding event."""
-    st.prot_sites[g, h, 2] = 1
+    st.prot_sites[g, h, 2] = POCKET_BOUND
     evt_idx = len(prot_events)
     bound_prots[(g, h)] = evt_idx
     site = int(st.prot_sites[g, h, 0])
@@ -332,6 +347,9 @@ def bind_protein(g: int, h: int) -> None:
         'removal':       None,
         'site_type_now': site,
         'nuc_state_now': nuc,
+        'h_now':         h,   # where it is NOW; 'h' stays the height it bound at
+        'n_hops':        0,   # rows stepped while tethered
+        'n_detach':      0,   # times it let go of the lattice without leaving
     })
     
     n_bindable_sites[site] -= 1     # Update count of bindable sites by site type.
@@ -342,7 +360,7 @@ def unbind_protein(g: int, h: int, removal_reason: str) -> None:
     Mark a pocket as vacant and finalize the event record."""
     for (g2, h2) in list(protein_bonds.get((g, h), set())): #Break bonds with partners before unbinding if unbound due to tubulin loss.
         break_protein_bond(g, h, g2, h2)
-    st.prot_sites[g, h, 2] = 0
+    st.prot_sites[g, h, 2] = POCKET_FREE
     evt_idx = bound_prots.pop((g, h))
     prot_events[evt_idx]['t_off']   = st.time_elapsed
     prot_events[evt_idx]['removal'] = removal_reason
@@ -391,6 +409,54 @@ def prot_is_doubly_bonded(g: int, h: int) -> bool:
 def already_bonded_on_side(g, h, g2):
     """True if (g,h) already has a bond towards groove g2's side."""
     return any(g_b == g2 for (g_b, _) in protein_bonds.get((g, h), set()))
+
+def oligomer_members(g: int, h: int) -> list:
+    """
+    Every protein in the same bonded cluster as (g, h), itself included.
+
+    Only used to decide whether a candidate bond is allowed: judging that needs
+    the row range of BOTH clusters being joined, not just the two proteins.
+    """
+    if (g, h) not in protein_bonds:
+        return [(g, h)]
+    seen, stack = set(), [(g, h)]
+    while stack:
+        u = stack.pop()
+        if u in seen:
+            continue
+        seen.add(u)
+        stack.extend(protein_bonds.get(u, ()))
+    return list(seen)
+
+
+def oligomer_span_ok(g1: int, h1: int, g2: int, h2: int) -> bool:
+    """
+    True if bonding (g1,h1) to (g2,h2) keeps the merged oligomer inside the
+    height window the interaction kernel allows:
+
+        max(h) - min(h) <= 2 * interaction_range
+
+    i.e. at most 2*interaction_range + 1 distinct rows -- 3 when the range is 1.
+
+    get_possible_protein_neighbors already limits a SINGLE bond to
+    +-interaction_range in height, but that limit is per-bond and nothing
+    accumulates it: a chain can step one row per bond and climb far past the
+    kernel. Measured at 2 uM without this check, 0.6% of oligomers exceeded the
+    window, the worst being grooves 2-8 with one subunit each spanning rows
+    35-39. One subunit per groove throughout, and still five rows tall.
+
+    Checking at bond formation is sufficient on its own. A cluster's row range
+    can only grow when a bond forms; breaking a bond or unbinding a protein
+    splits the cluster, and a subset of rows can only have a smaller-or-equal
+    range. Nothing relocates a protein that is already bound.
+
+    Same expression as get_tether_reachable_sites, which is dead code and has
+    never run -- so until now nothing enforced it.
+    """
+    rows = [hh for (_, hh) in oligomer_members(g1, h1)]
+    rows += [hh for (_, hh) in oligomer_members(g2, h2)]
+    return max(rows) - min(rows) <= 2 * interaction_range
+
 
 def get_prot_bond_break_rate(g1: int, h1: int, g2: int, h2: int) -> float:
     """
@@ -488,7 +554,11 @@ def update_pocket(g: int, h: int) -> None:
             if new_site_type in n_bound_prots_by_nuc:
                 n_bound_prots_by_nuc[new_site_type][new_nuc_state] += 1
 
-    else:
+    elif get_pocket_is_free(g, h):
+        # n_bindable_sites counts FREE pockets only. A pocket blocked by a
+        # tethered subunit was taken out of the pool when that subunit detached
+        # and is not put back until it leaves, so it must be skipped here or the
+        # counter drifts.
         if old_site_type != new_site_type:
             # Change the dictionary count
             if old_site_type in n_bindable_sites:
@@ -550,3 +620,135 @@ def require_height_in_bounds(h: int) -> None:
             f"Simulation exceeded preallocated height capacity: h={h}, "
             f"max_valid={st.MT_lattice.shape[1] - 1}"
         )
+
+# =============================================================
+# TETHERED SUBUNITS
+# =============================================================
+# A protein with no oligomer bonds that lets go of its pocket is gone. A BONDED
+# one is not: the ring still holds it on its linker, so it hovers over the
+# pocket it left and can come back -- to that row or to a neighbouring one,
+# wherever the bonds still reach. It cannot form new bonds while it is off the
+# lattice, and if its last bond breaks it has nothing holding it and leaves.
+
+REAL_BINDABLE_SITES = (SITE_LATTICE, SITE_EDGELAT2, SITE_EDGELONG2, SITE_EDGE3)
+
+
+def detach_to_tether(g: int, h: int) -> None:
+    """
+    Let go of the lattice while the oligomer keeps hold. The pocket is NOT
+    returned to the bindable pool -- the subunit is still hovering over it.
+    """
+    evt_idx = bound_prots.pop((g, h))
+    site = int(st.prot_sites[g, h, 0])
+    nuc = int(st.prot_sites[g, h, 1])
+
+    st.prot_sites[g, h, 2] = POCKET_TETHERED
+    tethered_prots[(g, h)] = evt_idx
+
+    if site in n_bound_prots_by_nuc:
+        n_bound_prots_by_nuc[site][nuc] -= 1
+
+    evt = prot_events[evt_idx]
+    evt['n_detach'] = evt.get('n_detach', 0) + 1
+
+
+def tether_reattach_rows(g: int, h: int) -> list:
+    """
+    Rows in groove g where this tethered subunit may reattach.
+
+    Its groove is fixed: it is held by partners in g-1 and/or g+1, and a bond
+    spans exactly one groove. The height is what is open, bounded by every
+    existing bond still having to reach -- and by the oligomer as a whole
+    staying inside 2*interaction_range rows.
+
+    Its own row is always a candidate: the only thing blocking that pocket is
+    this subunit itself.
+    """
+    partners = protein_bonds.get((g, h), ())
+    if not partners:
+        return []
+
+    rows = []
+    for h_new in range(h - interaction_range, h + interaction_range + 1):
+        if h_new < 0 or not height_in_bounds(h_new):
+            continue
+        if int(st.prot_sites[g, h_new, 0]) not in REAL_BINDABLE_SITES:
+            continue
+        if h_new != h and not get_pocket_is_free(g, h_new):
+            continue
+        if any(abs(h_new - hp) > interaction_range for (_, hp) in partners):
+            continue
+        others = [hh for (gg, hh) in oligomer_members(g, h) if (gg, hh) != (g, h)]
+        if others and max(others + [h_new]) - min(others + [h_new]) > 2 * interaction_range:
+            continue
+        rows.append(h_new)
+    return rows
+
+
+def reattach_from_tether(g: int, h: int, h_new: int) -> None:
+    """
+    Put a tethered subunit back on the lattice at (g, h_new), bonds intact.
+
+    The delicate part is protein_bonds when the row changes: this subunit's key
+    moves, and its OLD coordinates are also stored inside every partner's set,
+    so both sides have to be rewritten or a partner is left pointing at an empty
+    pocket.
+    """
+    evt_idx = tethered_prots.pop((g, h))
+    old_site = int(st.prot_sites[g, h, 0])
+    old_nuc = int(st.prot_sites[g, h, 1])
+
+    st.prot_sites[g, h, 2] = POCKET_FREE
+    st.prot_sites[g, h_new, 2] = POCKET_BOUND
+    bound_prots[(g, h_new)] = evt_idx
+
+    new_site = int(st.prot_sites[g, h_new, 0])
+    new_nuc = int(st.prot_sites[g, h_new, 1])
+
+    if h_new != h:
+        partners = protein_bonds.pop((g, h), set())
+        for p in partners:
+            neighbours = protein_bonds[p]
+            neighbours.discard((g, h))
+            neighbours.add((g, h_new))
+        if partners:
+            protein_bonds[(g, h_new)] = partners
+        # the vacated pocket rejoins the pool, the new one leaves it
+        if old_site in n_bindable_sites:
+            n_bindable_sites[old_site] += 1
+        if new_site in n_bindable_sites:
+            n_bindable_sites[new_site] -= 1
+        if old_site in n_bonded_prots_by_nuc:
+            n_bonded_prots_by_nuc[old_site][old_nuc] -= 1
+        if new_site in n_bonded_prots_by_nuc:
+            n_bonded_prots_by_nuc[new_site][new_nuc] += 1
+
+    if new_site in n_bound_prots_by_nuc:
+        n_bound_prots_by_nuc[new_site][new_nuc] += 1
+
+    evt = prot_events[evt_idx]
+    evt['h_now'] = h_new
+    evt['site_type_now'] = new_site
+    evt['nuc_state_now'] = new_nuc
+    if h_new != h:
+        evt['n_hops'] = evt.get('n_hops', 0) + 1
+
+
+def release_tether(g: int, h: int, reason: str = "tether_lost") -> None:
+    """
+    Nothing holds this subunit any more, so it leaves. Called when the last
+    oligomer bond of a tethered subunit breaks.
+    """
+    evt_idx = tethered_prots.pop((g, h))
+    site = int(st.prot_sites[g, h, 0])
+    st.prot_sites[g, h, 2] = POCKET_FREE
+    if site in n_bindable_sites:
+        n_bindable_sites[site] += 1     # pocket rejoins the pool
+    prot_events[evt_idx]['t_off'] = st.time_elapsed
+    prot_events[evt_idx]['removal'] = reason
+
+
+def drop_unheld_tethers() -> None:
+    """Sweep away any tethered subunit whose bonds have all gone."""
+    for key in [k for k in tethered_prots if k not in protein_bonds]:
+        release_tether(*key)
