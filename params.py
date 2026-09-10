@@ -160,6 +160,19 @@ k_prot_bond_break              = 70.0/5   # s-1, 70.0 is k_lateralbreak_TT (nucl
 prot_bond_stabilization_factor = 10.0/5   # 10 is lateral_stabilization_factor for tubulin
 
 # -------------------------------------------------------------
+# TETHERED SUBUNITS
+# -------------------------------------------------------------
+# A protein bonded into an oligomer can let go of its lattice pocket without
+# leaving: the ring still holds it on its linker. While off the lattice it is
+# not in bulk, so it rebinds against this LOCAL concentration instead of
+# conc_prot. Pick the value for your ring diameter and linker length from the
+# tables in tether_local_conc.py. Set to 0 to switch tethering off entirely --
+# proteins then detach only when they have no bonds, as before.
+
+conc_prot_tethered_nM = 219_200.0   # 31 nm ring, 17 aa linker  (= 219.2 uM)
+
+
+# -------------------------------------------------------------
 # EB1 PROTEIN ON-RATES  (nM-1 site-1 s-1)
 # -------------------------------------------------------------
 # Nucleotide state does NOT affect on-rate.
