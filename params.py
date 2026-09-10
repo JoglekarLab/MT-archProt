@@ -38,18 +38,11 @@
 n_pf            = 13        # number of protofilaments
                             # MATLAB: filN = 13
 
-n_iterations    = 450000    # total Gillespie steps
-                            # MATLAB: nIterations = 450000
-
 seed_length     = 25        # starting seed length in dimers
                             # MATLAB: startL = 25, fixedSeedSize = 25
 
 array_len_init  = 300       # initial pre-allocated height of MT arrays (dimers)
                             # MATLAB: startArrayLen = 300
-
-snapshot_freq   = 1000      # steps between output snapshots
-                            # 1-2 seconds of real simulation time per snapshot
-                            # MATLAB: cortime = 1000
 
 taper_threshold = 75        # max allowed taper (dimers) before catastrophe trigger
                             # if longest PF exceeds BOTH shortest PFs by this amount,
