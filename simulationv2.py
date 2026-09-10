@@ -840,7 +840,7 @@ snapshot_freq   = 250      # steps between output snapshots
                             # MATLAB: cortime = 1000
 
 print_freq    = 1000   # steps between console prints (0 = never print)
-make_gif      = True    # rendering costs more wall time than the simulation;
+make_gif      = False    # rendering costs more wall time than the simulation;
                         # run_sim.py turns this off by default for sweeps
 record_positions = True # record where every bound protein sits at each
                         # snapshot, plus a per-height lattice summary.
