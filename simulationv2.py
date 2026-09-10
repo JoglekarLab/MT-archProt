@@ -192,8 +192,9 @@ def generate_prot_remove_events():
     n_gtp_edge = n_gdp_edge = n_gtp_lattice = n_gdp_lattice = 0
 
     for (g, h) in bound_prots:
-        if prot_bond_count(g, h) > 0:
-            continue
+        # Bonded proteins are no longer skipped. Everything lets go at koff;
+        # what differs is whether it leaves or stays tethered, which
+        # execute_prot_remove decides.
         site = int(st.prot_sites[g, h, 0])
         nuc  = int(st.prot_sites[g, h, 1])
         is_lattice = (site == SITE_LATTICE)
@@ -215,6 +216,33 @@ def generate_prot_remove_events():
 
     return candidate_events
 
+def generate_prot_reattach_events():
+    """
+    A tethered subunit coming back onto the lattice.
+
+    Rate is kon for the target pocket times conc_prot_tethered_nM -- the LOCAL
+    concentration it sees while the ring holds it, not bulk conc_prot. Grouped
+    by target pocket type the same way the binding events are.
+    """
+    if conc_prot_tethered_nM <= 0.0 or not tethered_prots:
+        return []
+
+    counts = {}
+    for (g, h) in tethered_prots:
+        for h_new in tether_reattach_rows(g, h):
+            site = int(st.prot_sites[g, h_new, 0])
+            nuc = int(st.prot_sites[g, h_new, 1])
+            key = ('lattice' if site == SITE_LATTICE else 'edge', nuc != NUC_GTP)
+            counts[key] = counts.get(key, 0) + 1
+
+    KON = {'lattice': kon_prot_0, 'edge': kon_prot_1}
+    candidate_events = []
+    for (cls, gdp), n in counts.items():
+        name = f"prot_reattach_{'gdp' if gdp else 'gtp'}_{cls}"
+        rate = KON[cls] * conc_prot_tethered_nM * n
+        candidate_events.append(make_event(name, rate=rate, h=-1))
+    return candidate_events
+
 def generate_prot_bond_form_events():
     """
     One event per unbonded pair of neighboring bound proteins.
@@ -233,6 +261,8 @@ def generate_prot_bond_form_events():
                 continue
             if (g2, h2) in protein_bonds.get((g, h), set()): # Already bonded with each other
                 continue
+            if not oligomer_span_ok(g, h, g2, h2):
+                continue   # merged oligomer would exceed 2*interaction_range rows
             rate_bond = k_prot_bond_form_same_h if h == h2 else k_prot_bond_form_diff_h
             event = make_event('prot_bond_form', rate=rate_bond, h=h, g=g)
             event['g2'] = g2
@@ -375,8 +405,6 @@ def execute_prot_remove(event: dict) -> None:
 
     proteins = [] # Create the pool of candidate proteins to remove
     for (g, h) in bound_prots:
-        if prot_bond_count(g, h) > 0:   # NEW: bonded proteins cannot be removed
-            continue
         site = int(st.prot_sites[g, h, 0])
         nuc  = int(st.prot_sites[g, h, 1])
         is_lattice = (site == SITE_LATTICE)
@@ -388,15 +416,45 @@ def execute_prot_remove(event: dict) -> None:
         raise RuntimeError(f"execute_prot_remove: pool '{event['event_type']}' is empty at execution — counter mismatch")
 
     g, h = proteins[np.random.randint(len(proteins))]
-    unbind_protein(g, h, event['event_type'])
+
+    if prot_bond_count(g, h) == 0 or conc_prot_tethered_nM <= 0.0:
+        unbind_protein(g, h, event['event_type'])   # nothing holds it: gone
+    else:
+        detach_to_tether(g, h)                      # the oligomer keeps it
     
     
+def execute_prot_reattach(event: dict) -> None:
+    """Pick one (tethered subunit, target row) pair of this class and land it."""
+    lattice_event = 'lattice' in event['event_type']
+    gdp_event = 'gdp' in event['event_type']
+
+    pool = []
+    for (g, h) in tethered_prots:
+        for h_new in tether_reattach_rows(g, h):
+            site = int(st.prot_sites[g, h_new, 0])
+            nuc = int(st.prot_sites[g, h_new, 1])
+            if (site == SITE_LATTICE) != lattice_event:
+                continue
+            if (nuc != NUC_GTP) != gdp_event:
+                continue
+            pool.append((g, h, h_new))
+
+    if not pool:
+        raise RuntimeError(f"execute_prot_reattach: pool '{event['event_type']}' is "
+                           f"empty at execution - counter mismatch")
+
+    g, h, h_new = pool[np.random.randint(len(pool))]
+    reattach_from_tether(g, h, h_new)
+
 def execute_prot_bond_form(event: dict) -> None:
     g1, h1, g2, h2 = event['g'], event['h'], event['g2'], event['h2']
     if not get_pocket_is_bound(g1, h1) or not get_pocket_is_bound(g2, h2):
         raise RuntimeError(f"execute_prot_bond_form: one of the pockets is not bound at execution — counter mismatch: (g1,h1)=({g1},{h1}), (g2,h2)=({g2},{h2})")
     if (g2, h2) in protein_bonds.get((g1, h1), set()):
         raise RuntimeError(f"execute_prot_bond_form: pockets already bonded at execution — counter mismatch: (g1,h1)=({g1},{h1}), (g2,h2)=({g2},{h2})")
+    if not oligomer_span_ok(g1, h1, g2, h2):
+        raise RuntimeError(f"execute_prot_bond_form: merged oligomer would span more than "
+                           f"{2 * interaction_range} rows: (g1,h1)=({g1},{h1}), (g2,h2)=({g2},{h2})")
     form_protein_bond(g1, h1, g2, h2)
 
 def execute_prot_bond_break(event: dict) -> None:
@@ -850,6 +908,7 @@ def record_snapshot(step: int) -> None:
     out_time.append(float(st.time_elapsed))
     out_pf_lengths.append(pf_len.copy())
     out_n_bound.append(len(bound_prots))
+    out_n_tethered.append(len(tethered_prots))
     out_n_bonds.append(sum(len(v) for v in protein_bonds.values()) // 2)
     sizes = oligomer_sizes()                      # one walk, used twice
     out_max_oligo.append(sizes[0] if sizes else 0)
@@ -905,6 +964,7 @@ def run_simulation():
                     + generate_lat_bond_break_events()
                     + generate_prot_bind_events()
                     + generate_prot_remove_events()
+                    + generate_prot_reattach_events()
                     + generate_prot_bond_form_events()
                     + generate_prot_bond_break_events())  
 
@@ -936,11 +996,20 @@ def run_simulation():
             execute_prot_bind(event)
         elif event['event_type'].startswith('prot_remove'):
             execute_prot_remove(event)
+        elif event['event_type'].startswith('prot_reattach'):
+            execute_prot_reattach(event)
         elif event['event_type'] == 'prot_bond_form':
             execute_prot_bond_form(event)
         elif event['event_type'] == 'prot_bond_break':
             execute_prot_bond_break(event)
             
+        # A tethered subunit is only held by its bonds. Those break in several
+        # places -- a bond-break event, or unbind_protein clearing a partner's
+        # bonds on its way out -- so sweep once per step rather than trying to
+        # catch every path.
+        if tethered_prots:
+            drop_unheld_tethers()
+
         # --- hydrolysis ---
         execute_hydrolysis(dt=event['dt'])
 
